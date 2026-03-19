@@ -1,9 +1,13 @@
 #ifndef GAME_UNIT
 #define GAME_UNIT
 
+#include <deque>
+#include <initializer_list>
+
 #include <SDL3_image/SDL_image.h>
 
 #include "game/object.h"
+#include "game/job.h"
 
 // Forward declaration of classes to avoid circular dependencies.
 // class Object;
@@ -22,12 +26,16 @@ class Minimap;
 */
 class Unit: public Object {
 protected:
+    bool paused = false;
+    float speed = 15;
+private:
+
     int gridFromX;
     int gridFromY;
     int gridToX;
     int gridToY;
     bool gridSet = false;
-private:
+    std::deque<Job*> jobs;
 
     // int lastCellLeft, lastCellTop, lastCellRight, lastCellBottom;
     bool selected = false;
@@ -35,7 +43,7 @@ private:
     int layer = 0;    // Layer where the unit exists in map
 
     uint16_t allowedTerrains = 0;  // Default: No terrain allowed
-    bool ignoresTerrain = true;   // If true, unit ignores terrain checks
+    bool ignoresTerrain = false;   // If true, unit ignores terrain checks
     // std::vector<std::pair<int, int>> cells; // Cells where unit exist in map
 
     // SDL_Color minimapColor;
@@ -80,6 +88,11 @@ private:
     bool isSelected();
     void select();
 
+    // Move related
+    virtual void rotate(float deltaX, float deltaY); // optional, override per unit
+    bool move(Uint64 deltaTime, float dirX, float dirY, float& deltaX, float& deltaY);
+    bool move(Uint64 deltaTime, float dirX, float dirY); // <- new
+
 
     // Map related
     virtual int getLayer();
@@ -99,7 +112,22 @@ private:
     virtual void setColor(SDL_Color color);
     virtual SDL_Color* getColor();
 
-    // Denig related
+    // Job related
+    void updateJobs(State* state);
+    void addJob(Job* job);
+    void addJobs(std::initializer_list<Job*> jobs);
+    void removeJob(int type);                     // <-- NEW
+    void removeJobs(std::initializer_list<int>);  // <-- NEW
+    void pauseJobs();   // call when unit is paused
+    void resumeJobs();  // call when unit is resumed
+    void renderJobs(State* state);
+    virtual void onJobFinished(Job* job);
+
+    // Game pause related
+    virtual void pause();
+    virtual void resume();
+
+    // Debug related
     virtual void drawPosition(State* state);
 
     // Destructor

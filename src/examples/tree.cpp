@@ -1,20 +1,20 @@
 #include "game/camera.h"
 #include "game/image.h"
-#include "examples/farm.h"
+#include "examples/Tree.h"
 
-Farm::Farm(Sprite* sprite) {
+Tree::Tree(Sprite* sprite) {
     setLayer(1);
-    setSize(96, 96);
+    setSize(20, 20);
     allowTerrain(2);
-    setColor ({255, 0, 0, 255});
-    renderPosition = createChildPosition(0, 0, 96, 96);
+    setColor ({34, 139, 34, 255});
+    renderPosition = createChildPosition(-22, -76, 64, 96);
     body = sprite;
 }
 
-void Farm::render(State* state) {
+void Tree::render(State* state) {
     Camera* camera = state->camera;
     if (camera->isVisible(getRenderPosition())) {
-        // drawPosition(state);
         body->image->render(body->getRect(), camera->translate(getRenderPosition()));
+        drawPosition(state);
     }
 }

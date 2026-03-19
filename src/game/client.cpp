@@ -47,7 +47,7 @@ bool Client::connect(const std::string& uri) {
         try {
             port = std::stoi(portStr);
         } catch (...) {
-            std::cerr << "[Client] Invalid port: " << portStr << std::endl;
+            std::cout << "[Client] Invalid port: " << portStr << std::endl;
             return false;
         }
     } else {
@@ -80,7 +80,7 @@ bool Client::connect(const std::string& uri) {
 
     context = lws_create_context(&ctxInfo);
     if (!context) {
-        std::cerr << "[Client] Failed to create lws context\n";
+        std::cout << "[Client] Failed to create lws context\n";
         return false;
     }
 
@@ -99,14 +99,14 @@ bool Client::connect(const std::string& uri) {
 
     wsi = lws_client_connect_via_info(&connectInfo);
     if (!wsi) {
-        std::cerr << "[Client] Connection failed\n";
+        std::cout << "[Client] Connection failed\n";
         return false;
     }
 
     wait();
 
     if (!connected) {
-        std::cerr << "[Client] Connection failed\n";
+        std::cout << "[Client] Connection failed\n";
         return false;
     }
 
@@ -128,9 +128,6 @@ void Client::wait() {
     }
 }
 
-// void Client::send(const std::vector<uint8_t>& message) {
-//     outgoing.push_back({ message }); // Just queues the message
-// }
 
 // Inside Client class
 void Client::dispatchMessage(const std::vector<uint8_t>& data) {
@@ -144,15 +141,6 @@ void Client::dispatchMessage(const std::vector<uint8_t>& data) {
 }
 
 
-// void Client::flush() {
-//     if (wsi && connected && !outgoing.empty()) {
-//         lws_callback_on_writable(wsi);
-//         while (!outgoing.empty()) {
-//             poll();
-//         }
-//     }
-// }
-
 void Client::flush() {
     if (!wsi || !connected || outgoing.empty())
         return;
@@ -162,7 +150,7 @@ void Client::flush() {
 
     for (const auto& msg : outgoing) {
         size_t totalSizeIfAdded = currentChunk.size() + msg.size();
-        if (totalSizeIfAdded > MAX_PAYLOAD - 3) {  // 3 = group header
+        if (totalSizeIfAdded > MAX_PAYLOAD - LWS_PRE) {  // 3 = group header
             // finalize current chunk
             if (!currentChunk.empty()) {
                 groupedChunks.push_back(buildChunk(currentChunk));
@@ -190,19 +178,6 @@ void Client::flush() {
     }
 }
 
-// std::vector<uint8_t> Client::buildChunk(const std::vector<uint8_t>& data) {
-//     std::vector<uint8_t> chunk;
-//     uint16_t size = static_cast<uint16_t>(data.size());
-//     // chunk.reserve(3 + data.size());  // Avoid reallocation
-
-//     chunk.push_back(GROUP_TYPE);            // type = 255
-//     chunk.push_back(size & 0xFF);           // size LSB
-//     chunk.push_back((size >> 8) & 0xFF);    // size MSB
-//     chunk.insert(chunk.end(), data.begin(), data.end());
-
-//     return chunk;
-// }
-
 std::vector<uint8_t> Client::buildChunk(const std::vector<uint8_t>& data) {
     uint16_t size = static_cast<uint16_t>(data.size());
     std::vector<uint8_t> chunk(3 + data.size());
@@ -216,10 +191,6 @@ std::vector<uint8_t> Client::buildChunk(const std::vector<uint8_t>& data) {
     return chunk;
 }
 
-
-// void Client::setOnMessage(OnMessageCallback cb) {
-//     onMessage = cb;
-// }
 
 bool Client::isConnected()
 {
@@ -241,43 +212,6 @@ int Client::callback(struct lws* wsi, enum lws_callback_reasons reason, void* us
             }
             break;
 
-        // case LWS_CALLBACK_CLIENT_RECEIVE:
-        //     if (self && self->onMessage) {
-        //         std::vector<uint8_t> data((uint8_t*)in, (uint8_t*)in + len);
-        //         self->onMessage(data);
-        //     }
-        //     break;
-
-        // case LWS_CALLBACK_CLIENT_RECEIVE:
-        //     if (self && self->onMessage) {
-        //         const uint8_t* buffer = static_cast<const uint8_t*>(in);
-        //         size_t totalLen = len;
-
-        //         // Message is a group of messages
-        //         if (Protocol::type(buffer) == GROUP_TYPE) {
-        //             size_t offset = 3;
-        //             size_t groupPayloadSize = Protocol::size(buffer);
-
-        //             while (offset + 3 <= totalLen) {
-        //                 const uint8_t* msgPtr = buffer + offset;
-        //                 uint16_t msgSize = Protocol::size(msgPtr);
-
-        //                 if (offset + 3 + msgSize > totalLen)
-        //                     break;  // corrupt or incomplete
-
-        //                 std::vector<uint8_t> singleMsg(msgPtr, msgPtr + 3 + msgSize);
-        //                 self->onMessage(singleMsg);
-
-        //                 offset += 3 + msgSize;
-        //             }
-        //         }
-        //         // Message is a single message
-        //         else {
-        //             std::vector<uint8_t> singleMsg(buffer, buffer + totalLen);
-        //             self->onMessage(singleMsg);
-        //         }
-        //     }
-        //     break;
         case LWS_CALLBACK_CLIENT_RECEIVE:
         if (self) {
             const uint8_t* buffer = static_cast<const uint8_t*>(in);
@@ -310,24 +244,22 @@ int Client::callback(struct lws* wsi, enum lws_callback_reasons reason, void* us
 
                 unsigned char buf[LWS_PRE + MAX_PAYLOAD];
 
-                if (msg.size() > MAX_PAYLOAD) {
-                    std::cerr << "[Client] Binary payload too large!\n";
+                if (msg.size() > MAX_PAYLOAD + LWS_PRE) {
+                    std::cout << "[Client] Binary payload too large!\n";
                     return -1;
                 }
 
                 std::memcpy(&buf[LWS_PRE], msg.data(), msg.size());
 
-                // std::cout << "[Client] Sending binary message (" << msg.size() << " bytes): " << std::cout << std::endl;
 
                 int flags = LWS_WRITE_BINARY;// | LWS_WRITE_NO_FIN;
                 int bytes_written = lws_write(wsi, &buf[LWS_PRE], msg.size(), (lws_write_protocol)flags);
 
-                if (bytes_written < 0) {
-                    std::cerr << "[Client] lws_write failed!\n";
+                if (bytes_written < 0 || bytes_written < msg.size()) {
+                    std::cout << "[Client] lws_write failed!\n";
                     return -1;
                 }
 
-                // self->outgoing.erase(self->outgoing.begin());
                 self->outgoing.pop_front();
 
 
@@ -340,9 +272,9 @@ int Client::callback(struct lws* wsi, enum lws_callback_reasons reason, void* us
 
         case LWS_CALLBACK_CLIENT_CLOSED:
         case LWS_CALLBACK_CLIENT_CONNECTION_ERROR:
-            std::cerr << "[Client] Connection error\n";
+            std::cout << "[Client] Connection error\n";
             if (in && len > 0)
-                std::cerr << "Error: " << std::string((char*)in, len) << "\n";
+                std::cout << "Error: " << std::string((char*)in, len) << "\n";
 
             self->connected = false;
 
@@ -353,7 +285,7 @@ int Client::callback(struct lws* wsi, enum lws_callback_reasons reason, void* us
             self->wsi = nullptr;
 
             if (self->autoReconnect && !self->reconnectUri.empty()) {
-                std::cerr << "[Client] Attempting reconnect...\n";
+                std::cout << "[Client] Attempting reconnect...\n";
                 self->connect(self->reconnectUri);
             }
             break;

@@ -11,6 +11,8 @@
 #include "examples/enum.h"
 #include "examples/footman.h"
 #include "examples/farm.h"
+#include "examples/critter.h"
+#include "examples/tree.h"
 #include "examples/messages.h"
 
 // Prepare function
@@ -24,6 +26,7 @@ void Warcraft::prepare(State* state) {
     font = TTF_OpenFont("assets/fonts/titillium.ttf", 20);
     TTF_SetFontOutline(font, 1);
     fontSmall = TTF_OpenFont("assets/fonts/titillium.ttf", 12);
+    TTF_SetFontOutline(fontSmall, 1);
     fps = (new Fps(font))->setPositionFixed(true);
     fps->setColor({255, 220, 0, 255});
 
@@ -156,10 +159,41 @@ void Warcraft::prepare(State* state) {
                                 true))->addClip();
 
 
+    sprites[SPRITE_HUMAN_MACDONALDS] = (new Sprite(new Image(renderer, "assets/sprites/chicken.png"),
+    96,
+    96,
+    100,
+    true))->addClip();
+
+
+    sprites[SPRITE_TREE1] = (new Sprite(new Image(renderer, "assets/sprites/pine1.png"),
+    64,
+    96,
+    100,
+    true))->addClip();
+
+    sprites[SPRITE_TREE2] = (new Sprite(new Image(renderer, "assets/sprites/pine2.png"),
+    64,
+    96,
+    100,
+    true))->addClip();
+
+    sprites[SPRITE_CRITTER] = (new Sprite(new Image(renderer, "assets/sprites/critter.png"),
+    32,
+    32))
+    ->addClip(UP, 1, 1, 1, false, false)
+    ->addClip(UP+RIGHT, 2, 1, 1, false, false)
+    ->addClip(UP+LEFT, 2, 1, 1, true, false)
+    ->addClip(RIGHT, 3, 1, 1, false, false)
+    ->addClip(LEFT, 3, 1, 1, true, false)
+    ->addClip(RIGHT+DOWN, 4, 1, 1, false, false)
+    ->addClip(LEFT+DOWN, 4, 1, 1, true, false)
+    ->addClip(DOWN, 5, 1, 1, false, false);
+
     printf("Creating farms\n");
-    for (int x=128; x<100*128; x+=128) {
-        for (int y=128; y<100*128; y+=128) {
-            Farm* farm = new Farm(sprites[SPRITE_HUMAN_FARM]);
+    for (int x=1000; x<10*128; x+=128) {
+        for (int y=128; y<10*128; y+=128) {
+            Farm* farm = new Farm(sprites[SPRITE_HUMAN_MACDONALDS]);
             farm->setMap(map);
             if (farm->canOccupy(x-20, y-20, 64+20, 64+20)) {
                 farm->setPosition(x, y);
@@ -169,14 +203,31 @@ void Warcraft::prepare(State* state) {
         }
     }
 
+    printf("Creating trees\n");
+    srand(time(NULL));
+
+    
     // footmanDebugText = (new Text(fontSmall))
     //                     ->enableCache()
     //                     ->setPositionFixed(false);
 
+    // printf("Creating critters\n");
+    // for (int x=500; x<500+100*32; x+=32) {
+    //     for (int y=500; y<500+100*32; y+=32) {
+    //         Critter* critter = new Critter(sprites[SPRITE_CRITTER], font);
+    //         critter->setMap(map);
+    //         if (critter->canOccupy(x, y, 32, 32)) {
+    //             critter->setPosition(x, y);
+    //             addObject(critter, critter->getId());
+    //         }
+    //     }
+    // }
+
+
     printf("Creating footmans\n");
     Footman* lastFootman = NULL;
-    for (int x=0; x<100*32; x+=32) {
-        for (int y=10; y<100*32; y+=32) {
+    for (int x=0; x<1*32; x+=32) {
+        for (int y=10; y<1*32; y+=32) {
             Footman* footman = new Footman(sprites[SPRITE_FOOTMAN_RED], fontSmall);
             footman->setMap(map);
             if (footman->canOccupy(x, y, 32, 32)) {
@@ -190,6 +241,27 @@ void Warcraft::prepare(State* state) {
         lastFootman->select();
     }
 
+    printf("Creating trees\n");   
+    // Loop in Y → X order to ensure back-to-front drawing
+    for (int y = 128; y < 10 * 96; y += 36) { // Reduced spacing for overlap
+        for (int x = 228; x < 10 * 64; x += 32) {
+            if (rand() % 100 < 80) { // 80% chance to spawn a tree
+                int offsetX = rand() % 12 - 6;  // Slight horizontal jitter
+                int offsetY = rand() % 6;       // Tiny vertical offset
+                int treeType = (rand() % 100 < 60) ? SPRITE_TREE1 : SPRITE_TREE2; // Mix them
+    
+                Tree* tree = new Tree(sprites[treeType]);
+                tree->setMap(map);
+                int treeX = x + offsetX;
+                int treeY = y + offsetY;
+    
+                // if (tree->canOccupy(treeX, treeY, 64, 96)) {
+                    tree->setPosition(treeX, treeY);
+                    addObject(tree); // assume draw order is by Y
+                // }
+            }
+        }
+    }
 
     // addObject(new Torch({0, 0, 0, 255},  100, 320));
         

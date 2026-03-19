@@ -32,8 +32,11 @@ Architecture
 Big Challanges
 ----------------------
 . Job system - Introduce job sysem for automated tasks
+    . Make some simple move job
 . LUA - Try lua scripting
 . If those work can I update objects in another thread?
+. Find nearest possible enemy and call attack on it like receiveDamage
+. We need good renderer which will maintain order from top to bottom
 
 Network
 --------------------------

@@ -65,7 +65,16 @@ void Text::render(State* state, Position* position) {
             SDL_GetTextureSize(texture, &width, &height);
             position->setSize(width, height);
         } else {
-            SDL_Surface* surface = TTF_RenderText_Blended(font, text.c_str(), 0,color);
+            SDL_Surface* surface = TTF_RenderText_Blended(font, text.c_str(), 0, {0,0,0,255});
+            SDL_Surface* surfaceFg = TTF_RenderText_Blended(font, text.c_str(), 0, color);
+            // Make sure both surfaces were created successfully
+            if (surface && surfaceFg) {
+                SDL_Rect srcRect = {0, 0, surfaceFg->w, surfaceFg->h};
+                SDL_Rect destRect = {-1, -1, 0, 0}; // 1px offset for shadow
+                SDL_BlitSurface(surfaceFg, &srcRect, surface, &destRect);
+            }
+            
+            SDL_DestroySurface(surfaceFg); // correct way to free a surface
             if (surface==NULL) {
                 printf("Failed to render text: %s", SDL_GetError());
             }

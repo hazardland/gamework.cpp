@@ -32,15 +32,15 @@ Sprite::Sprite (Image* image,
 
 // addClip method
 Sprite* Sprite::addClip(int clipId,
-                        int startRow,
                         int startCell,
+                        int startRow, 
                         int frameCount,
                         bool flipX,
                         bool flipY) {
     clips[clipId] = new Clip(image,
                              frameWidth,
                              frameHeight,
-                             startRow, startCell,
+                             startCell, startRow,
                              frameCount,
                              framePause,
                              flipX, flipY, readVertically);

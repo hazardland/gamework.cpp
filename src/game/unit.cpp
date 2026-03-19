@@ -9,12 +9,6 @@
 #include <algorithm>
 
 
-// Destructor
-Unit::~Unit() {
-    delete renderPosition;
-    delete selectPosition;
-}
-
 Unit* Unit::setMap(Map* map) {
     this->map = map;
     return this;
@@ -45,6 +39,48 @@ bool Unit::isSelected() {
 void Unit::select() {
     selected = true;
 }
+
+// Input dirX and dirY are directions -1, 0 or 1
+bool Unit::move (Uint64 deltaTime, float dirX, float dirY, float &deltaX, float &deltaY) {
+
+    if (dirX != 0 && dirY != 0) {
+        dirX *= 0.7071f;
+        dirY *= 0.7071f;
+    }
+    
+    deltaX = (dirX * (float)deltaTime) * (speed/100);
+    deltaY = (dirY * (float)deltaTime) * (speed/100);
+
+    if (deltaX!=0 && deltaY!=0 && canMove(deltaX, deltaY)) {
+        rotate(deltaX, deltaY);
+        addPosition(deltaX, deltaY);
+        return true;
+    } else if (deltaX!=0 && canMove(deltaX, 0)) {
+        rotate(deltaX, 0);
+        addPosition(deltaX, 0);
+        deltaY = 0;
+        return true;
+    } else if (deltaY!=0 && canMove(0, deltaY)) {
+        rotate(0, deltaY);
+        addPosition(0, deltaY);
+        deltaX = 0;
+        return true;
+    }
+
+    return false;
+}
+
+bool Unit::move(Uint64 deltaTime, float dirX, float dirY) {
+    float dx = 0, dy = 0;
+    return move(deltaTime, dirX, dirY, dx, dy);
+}
+
+// Implement your rotation if needed
+// You might need to update sprite to
+// Face the direction unit just moved
+void Unit::rotate(float deltaX, float deltaY) {
+
+};
 
 bool Unit::canMove(float deltaX, float deltaY) {
     if (map==nullptr) {
@@ -249,9 +285,123 @@ void Unit::setColor(SDL_Color color) {
     this->color = color;
 }
 
+void Unit::addJob(Job* job) {
+    if (!job) return;
 
+    if (job->isUnique()) {
+        for (auto it = jobs.begin(); it != jobs.end(); ++it) {
+            if ((*it)->isUnique() && (*it)->getType() == job->getType()) {
+                delete *it;
+                jobs.erase(it); // remove the old job
+                break;          // exit loop, then add the new one
+            }
+        }
+    }
 
+    jobs.push_back(job);
+}
 
-// void Unit::~Unit() {
-//     // Implement destruction of the unit here if necessary
-// }
+void Unit::addJobs(std::initializer_list<Job*> jobList) {
+    for (Job* job : jobList) {
+        addJob(job);
+    }
+}
+
+void Unit::onJobFinished (Job* job) {
+
+}
+
+void Unit::updateJobs(State* state) {
+    std::vector<Job*> newJobs;
+    if (jobs.size() > 2) {
+        newJobs.reserve(jobs.size());
+    }
+
+    for (auto it = jobs.begin(); it != jobs.end();) {
+        Job* job = *it;
+
+        if (!job->update(state)) {
+            auto childJobs = job->finish();
+
+            if (!childJobs.empty()) {
+                newJobs.insert(newJobs.end(),
+                    std::make_move_iterator(childJobs.begin()),
+                    std::make_move_iterator(childJobs.end()));
+            }
+
+            onJobFinished(job);
+
+            delete job;
+            it = jobs.erase(it);
+        } else {
+            ++it;
+        }
+    }
+
+    if (!newJobs.empty()) {
+        for (Job* job : newJobs) {
+            addJob(job); // ensures uniqueness still applies
+        }
+    }
+}
+
+void Unit::renderJobs(State* state) {
+    for (Job* job : jobs) {
+        job->render(state); // no check needed — base is empty
+    }
+}
+
+void Unit::removeJob(int type) {
+    for (auto it = jobs.begin(); it != jobs.end(); ) {
+        if ((*it)->getType() == type) {
+            delete *it;
+            it = jobs.erase(it);
+        } else {
+            ++it;
+        }
+    }
+}
+
+void Unit::removeJobs(std::initializer_list<int> types) {
+    for (int type : types) {
+        removeJob(type);
+    }
+}
+
+void Unit::pauseJobs() {
+    for (Job* job : jobs) {
+        job->pause();
+    }
+}
+
+void Unit::resumeJobs() {
+    for (Job* job : jobs) {
+        job->resume();
+    }
+}
+
+void Unit::pause() {
+    if (paused) return;
+    paused = true;
+
+    for (Job* job : jobs) {
+        job->pause();
+    }
+}
+
+void Unit::resume() {
+    if (!paused) return;
+    paused = false;
+
+    for (Job* job : jobs) {
+        job->resume();
+    }
+}
+
+Unit::~Unit() {
+    for (Job* job : jobs) {
+        delete job;
+    }
+    delete renderPosition;
+    delete selectPosition;
+}

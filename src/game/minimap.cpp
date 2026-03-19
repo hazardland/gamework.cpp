@@ -10,6 +10,10 @@
 #include "game/screen.h"
 #include "game/position.h"
 
+// Grid width and grid height is needed here
+// To initialize background texture
+// Later we might directly render it(?)
+// Better with server possibly
 Minimap::Minimap(SDL_Renderer* renderer,
         int minimapWidth,
         int minimapHeight,
@@ -33,14 +37,13 @@ Minimap::Minimap(SDL_Renderer* renderer,
 
     setSize(minimapWidth, minimapHeight);
 
-   
     background = SDL_CreateTexture(renderer,
         SDL_PIXELFORMAT_RGBA32,
         SDL_TEXTUREACCESS_TARGET,
         gridWidth * minimapScale,
         gridHeight * minimapScale);
     
-    SDL_SetTextureBlendMode(background, SDL_BLENDMODE_NONE); // or BLEND if needed
+    SDL_SetTextureBlendMode(background, SDL_BLENDMODE_NONE);
 
 
     foreground = SDL_CreateTexture(renderer, 
@@ -52,11 +55,22 @@ Minimap::Minimap(SDL_Renderer* renderer,
     SDL_SetTextureBlendMode(foreground, SDL_BLENDMODE_BLEND);
 
     drag = new Drag(getPosition(), false, true);
+
     cooldown = new Cooldown(100);
 
 }
 
+// Map is linking to minimap using this function
+// Basically it shares its grid and grid cell size
+// 
+void Minimap::setMapData(std::vector<std::vector<Cell*>>& grid, int cellWidth, int cellHeight) {
+    this->grid = &grid;
+    this->cellWidth = cellWidth;
+    this->cellHeight = cellHeight;
+}
 
+// Map genrator or Map modifier calles this
+// It should reflect terrain changes or fillings live
 void Minimap::setTerrain(int cell, int row, int red, int green, int blue) {
     if (!background) return;
 
@@ -75,11 +89,6 @@ void Minimap::setTerrain(int cell, int row, int red, int green, int blue) {
 }
 
 
-void Minimap::setMapData(std::vector<std::vector<Cell*>>& grid, int cellWidth, int cellHeight) {
-    this->grid = &grid;
-    this->cellWidth = cellWidth;
-    this->cellHeight = cellHeight;
-}
 
 void Minimap::update(State* state) {
     
@@ -140,7 +149,9 @@ void Minimap::render(State* state) {
     }
 
     SDL_RenderTexture(renderer, background, &frame, getPosition());
-    renderRectBorder(getPosition(), 102, 5, 51, 255);
+    // renderRectBorder(getPosition(), 102, 5, 51, 255);
+    SDL_SetRenderDrawColor(renderer, 102, 5, 51, 255);
+    SDL_RenderRect(renderer, getPosition());
 
     if (modified && cooldown->isReady()) {
 
@@ -204,6 +215,14 @@ void Minimap::render(State* state) {
             SDL_RenderFillRects(renderer, items.data(), items.size());
         }
 
+    // Scope rectangle color
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 70);
+    SDL_RenderFillRect(renderer, &scope);
+
+    // Scope rectangle border
+    SDL_SetRenderDrawColor(renderer, 102, 5, 51, 255);
+    SDL_RenderRect(renderer, &scope);
+
         SDL_SetRenderTarget(renderer, nullptr); // back to default        
         
         // SDL_UnlockTexture(foreground);
@@ -214,23 +233,12 @@ void Minimap::render(State* state) {
 
     SDL_RenderTexture(renderer, foreground, NULL, getPosition());
 
-    // Render scope rectangle
-    renderRectColor(&scope, 255, 255, 255, 70);
-    renderRectBorder(&scope, 102, 5, 51, 255);
+
 
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
 }
 
 
-void Minimap::renderRectColor(SDL_FRect* rect, int red, int green, int blue, int alpha) {
-    SDL_SetRenderDrawColor(renderer, red, blue, green, alpha);
-    SDL_RenderFillRect(renderer, rect);
-}
-
-void Minimap::renderRectBorder(SDL_FRect* rect, int red, int green, int blue, int alpha) {
-    SDL_SetRenderDrawColor(renderer, red, blue, green, alpha);
-    SDL_RenderRect(renderer, rect);
-}
 
 bool Minimap::isVisible(State* state) {
     return visible;
