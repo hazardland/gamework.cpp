@@ -46,6 +46,12 @@ $(BUILD_DIR):
 $(OBJ_DIRS):
 	mkdir -p $@
 
+SNAKE_SRC := snake.cpp $(wildcard src/game/*.cpp)
+SNAKE_OBJ := $(patsubst %.cpp,$(BUILD_DIR)/%.o,$(SNAKE_SRC))
+
+snake: $(BUILD_DIR) $(OBJ_DIRS) $(SNAKE_OBJ)
+	$(CXX) $(CXXFLAGS) -o $@ $(SNAKE_OBJ) $(LDFLAGS)
+
 # Clean command
 clean:
-	rm -rf main $(BUILD_DIR)
+	rm -rf main snake $(BUILD_DIR)
