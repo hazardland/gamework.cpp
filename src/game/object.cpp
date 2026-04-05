@@ -142,6 +142,7 @@ void Object::updateChildPositions() {
 }
 
 Object::~Object() {
+    delete position;
     // Cleanup allocated child positions
     for (auto pos : childPositions) {
         delete pos;

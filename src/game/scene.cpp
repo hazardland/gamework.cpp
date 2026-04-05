@@ -146,7 +146,7 @@ void Scene::addObject(Object* obj) {
 
 void Scene::addObject(Object* obj, uint32_t id) {
     objects.push_back(obj);
-    objectById[obj->getId()] = obj;    
+    objectById[id] = obj;
 }
 
 Object* Scene::getObject(int id) {

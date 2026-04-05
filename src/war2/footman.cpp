@@ -3,8 +3,8 @@
 #include "game/protocol.h"
 #include "game/move.h"
 
-#include "examples/footman.h"
-#include "examples/messages.h"
+#include "war2/footman.h"
+#include "war2/messages.h"
 
 // Constructor
 Footman::Footman(Sprite* sprite, TTF_Font* font) {

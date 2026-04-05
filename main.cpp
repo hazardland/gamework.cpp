@@ -2,7 +2,7 @@
 
 #include <game/window.h>
 
-#include <examples/war2.h>
+#include <war2/war2.h>
 
 
 int main(int argc, char** argv){

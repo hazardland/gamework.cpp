@@ -33,8 +33,7 @@ Minimap::Minimap(SDL_Renderer* renderer,
     frame.w = minimapWidth;
     frame.h = minimapHeight;
 
-    position = new Position(0,0);
-
+    setPosition(0, 0);
     setSize(minimapWidth, minimapHeight);
 
     background = SDL_CreateTexture(renderer,
@@ -91,6 +90,9 @@ void Minimap::setTerrain(int cell, int row, int red, int green, int blue) {
 
 
 void Minimap::update(State* state) {
+    if (grid == nullptr || cellWidth <= 0 || cellHeight <= 0) {
+        return;
+    }
     
     Mouse* mouse = state->input->mouse;
     Camera* camera = state->camera;
@@ -144,7 +146,7 @@ void Minimap::update(State* state) {
 
 
 void Minimap::render(State* state) {
-    if (!visible) {
+    if (!visible || grid == nullptr || background == nullptr || foreground == nullptr) {
         return;
     }
 
@@ -249,4 +251,17 @@ void Minimap::toggleVisible() {
 }
 void Minimap::markModified() {
     modified = true;
+}
+
+Minimap::~Minimap() {
+    delete drag;
+    delete cooldown;
+
+    if (background != nullptr) {
+        SDL_DestroyTexture(background);
+    }
+
+    if (foreground != nullptr) {
+        SDL_DestroyTexture(foreground);
+    }
 }

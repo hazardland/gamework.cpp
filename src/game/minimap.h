@@ -29,11 +29,12 @@ public:
     virtual bool isVisible(State* state) override;
     void toggleVisible();
     void markModified();
+    ~Minimap() override;
 
     private:
-    std::vector<std::vector<Cell*>>* grid;
-    float cellWidth;
-    float cellHeight;
+    std::vector<std::vector<Cell*>>* grid = nullptr;
+    float cellWidth = 0;
+    float cellHeight = 0;
     int gridWidth;
     int gridHeight;
     float minimapScale;
@@ -45,13 +46,13 @@ public:
     SDL_FRect frame;
     std::vector<Unit*> units;
     SDL_Color scopeColor = {50, 205, 50};
-    Drag* drag;
-    Cooldown* cooldown;
+    Drag* drag = nullptr;
+    Cooldown* cooldown = nullptr;
     bool visible = true;
-    int prevCameraX;
-    int prevCameraY;
-    int prevCameraWidth;
-    int prevCameraHeight;
+    int prevCameraX = 0;
+    int prevCameraY = 0;
+    int prevCameraWidth = 0;
+    int prevCameraHeight = 0;
 };
 
 #endif // GAME_MINIMAP_H

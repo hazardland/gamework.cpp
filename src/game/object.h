@@ -53,7 +53,7 @@ class Object {
         virtual bool isVisible(State* state);
         virtual void update(State* state);
         virtual void render(State* state);
-        ~Object();
+        virtual ~Object();
 };
 
 #endif // GAME_OBJECT

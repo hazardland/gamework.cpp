@@ -4,6 +4,7 @@
 #define GAME_SCENE_H
 
 #include <map>
+#include <unordered_map>
 #include <vector>
 
 #include <SDL3/SDL.h>

@@ -21,18 +21,26 @@ endif
 
 # Build directories
 BUILD_DIR := build
-SRC := main.cpp $(wildcard src/game/*.cpp) $(wildcard src/examples/*.cpp)
-OBJ := $(patsubst %.cpp,$(BUILD_DIR)/%.o,$(SRC))
+
+GAME_SRC := $(wildcard src/game/*.cpp)
+WAR2_SRC := war2.cpp $(GAME_SRC) $(wildcard src/war2/*.cpp)
+KLAD1_SRC := klad1.cpp $(GAME_SRC) $(wildcard src/klad1/*.cpp)
+
+WAR2_OBJ := $(patsubst %.cpp,$(BUILD_DIR)/%.o,$(WAR2_SRC))
+KLAD1_OBJ := $(patsubst %.cpp,$(BUILD_DIR)/%.o,$(KLAD1_SRC))
 
 # Create directories for object files
-OBJ_DIRS := $(sort $(dir $(OBJ)))
+OBJ_DIRS := $(sort $(dir $(WAR2_OBJ) $(KLAD1_OBJ)))
 
 # Default target
-all: $(BUILD_DIR) $(OBJ_DIRS) main
+all: $(BUILD_DIR) $(OBJ_DIRS) war2 klad1
 
 # Linking step
-main: $(OBJ)
-	$(CXX) $(CXXFLAGS) -o $@ $(OBJ) $(LDFLAGS)
+war2: $(WAR2_OBJ)
+	$(CXX) $(CXXFLAGS) -o $@ $(WAR2_OBJ) $(LDFLAGS)
+
+klad1: $(KLAD1_OBJ)
+	$(CXX) $(CXXFLAGS) -o $@ $(KLAD1_OBJ) $(LDFLAGS)
 
 # Compilation step (separate object files in build/)
 $(BUILD_DIR)/%.o: %.cpp | $(BUILD_DIR) $(OBJ_DIRS)
@@ -46,12 +54,6 @@ $(BUILD_DIR):
 $(OBJ_DIRS):
 	mkdir -p $@
 
-SNAKE_SRC := snake.cpp $(wildcard src/game/*.cpp)
-SNAKE_OBJ := $(patsubst %.cpp,$(BUILD_DIR)/%.o,$(SNAKE_SRC))
-
-snake: $(BUILD_DIR) $(OBJ_DIRS) $(SNAKE_OBJ)
-	$(CXX) $(CXXFLAGS) -o $@ $(SNAKE_OBJ) $(LDFLAGS)
-
 # Clean command
 clean:
-	rm -rf main snake $(BUILD_DIR)
+	rm -rf war2 klad1 $(BUILD_DIR)

@@ -52,18 +52,18 @@ private:
     SDL_Color color;
 
     public:
-    bool moved;
-    Map* map;
-    Minimap* minimap;
-    Scene* scene;
+    bool moved = false;
+    Map* map = nullptr;
+    Minimap* minimap = nullptr;
+    Scene* scene = nullptr;
     // Render position is relateive to position but can be different
     // Like can be x:-24, y:-24 which means it will be drown
     // Sligthly up and left from parent position
     // While main .position represents object in map
     // .renderPosition determines where on screen the object is shown
-    Position* renderPosition;
+    Position* renderPosition = nullptr;
     // Select position defines select area it is also relative to .position
-    Position* selectPosition;
+    Position* selectPosition = nullptr;
 
     // Setter methods
     virtual Unit* setMap(Map* map);

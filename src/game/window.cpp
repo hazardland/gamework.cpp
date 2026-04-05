@@ -37,7 +37,9 @@ Window::Window(const char* title, const int width, const int height, State* stat
         std::cout << "Failed to create window: " << SDL_GetError() << std::endl;
     }
 
-    if (!state) {
+    if (state) {
+        this->state = state;
+    } else {
         std::cout << "Creating state\n";
         this->state = new State();
     }
@@ -91,7 +93,7 @@ void Window::toggleFullscreen() {
             SDL_GetWindowSize(window, &originalWidth, &originalHeight);
 
             const SDL_DisplayMode* displayMode = SDL_GetCurrentDisplayMode(0);
-            if (displayMode == 0) { // Get current monitor resolution
+            if (displayMode != nullptr) { // Get current monitor resolution
                 SDL_SetWindowSize(window, displayMode->w, displayMode->h);  // Set window size to match screen
             }
 
