@@ -195,7 +195,7 @@ void Warcraft::prepare(State* state) {
         for (int y=128; y<10*128; y+=128) {
             Farm* farm = new Farm(sprites[SPRITE_HUMAN_MACDONALDS]);
             farm->setMap(map);
-            if (farm->canOccupy(x-20, y-20, 64+20, 64+20)) {
+            if (farm->canPlace(x-20, y-20, 64+20, 64+20)) {
                 farm->setPosition(x, y);
                 addObject(farm);
             }
@@ -216,7 +216,7 @@ void Warcraft::prepare(State* state) {
     //     for (int y=500; y<500+100*32; y+=32) {
     //         Critter* critter = new Critter(sprites[SPRITE_CRITTER], font);
     //         critter->setMap(map);
-    //         if (critter->canOccupy(x, y, 32, 32)) {
+    //         if (critter->canPlace(x, y, 32, 32)) {
     //             critter->setPosition(x, y);
     //             addObject(critter, critter->getId());
     //         }
@@ -230,7 +230,7 @@ void Warcraft::prepare(State* state) {
         for (int y=10; y<1*32; y+=32) {
             Footman* footman = new Footman(sprites[SPRITE_FOOTMAN_RED], fontSmall);
             footman->setMap(map);
-            if (footman->canOccupy(x, y, 32, 32)) {
+            if (footman->canPlace(x, y, 32, 32)) {
                 footman->setPosition(x, y);
                 addObject(footman, footman->getId());
                 lastFootman = footman;
@@ -255,7 +255,7 @@ void Warcraft::prepare(State* state) {
                 int treeX = x + offsetX;
                 int treeY = y + offsetY;
     
-                // if (tree->canOccupy(treeX, treeY, 64, 96)) {
+                // if (tree->canPlace(treeX, treeY, 64, 96)) {
                     tree->setPosition(treeX, treeY);
                     addObject(tree); // assume draw order is by Y
                 // }

@@ -23,7 +23,8 @@ public:
     static constexpr int CELL_HEIGHT = 22;
 
     static constexpr int SPRITE_BRICK = 1;
-    static constexpr int SPRITE_PLAYER = 2;
+    static constexpr int SPRITE_BRIDGE = 2;
+    static constexpr int SPRITE_PLAYER = 3;
 
     static constexpr int LAYER_BACKGROUND = 0;
     static constexpr int LAYER_WORLD = 1;

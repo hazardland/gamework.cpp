@@ -95,6 +95,14 @@ void Unit::rotate(float deltaX, float deltaY) {
 
 };
 
+bool Unit::shouldCollide(Unit* target) const {
+    return true;
+}
+
+int Unit::getKind() const {
+    return 0;
+}
+
 bool Unit::canMove(float deltaX, float deltaY) {
     if (map==nullptr) {
         return true;
@@ -110,10 +118,10 @@ bool Unit::canMove(float deltaX, float deltaY) {
     float targetHeight = getHeight();
 
     // Check if the unit can legally occupy the target position
-    return canOccupy(targetX, targetY, targetWidth, targetHeight);
+    return canPlace(targetX, targetY, targetWidth, targetHeight);
 }
 
-bool Unit::canOccupy(float newX, float newY, float newWidth, float newHeight) {
+bool Unit::canPlace(float newX, float newY, float newWidth, float newHeight) {
 
     if (map==nullptr) {
         return true;
@@ -156,6 +164,7 @@ bool Unit::canOccupy(float newX, float newY, float newWidth, float newHeight) {
             for (const auto& object : objects) {
                 // Skip self-check
                 if (object == this) continue;
+                if (!shouldCollide(object)) continue;
 
                 // Now do collision check inside cell
                 if (newX < object->getX() + object->getWidth() &&

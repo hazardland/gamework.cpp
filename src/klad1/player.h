@@ -15,6 +15,7 @@ public:
 
     void update(State* state) override;
     void render(State* state) override;
+    bool shouldCollide(Unit* target) const override;
 
     ~Player();
 
@@ -28,6 +29,7 @@ private:
     Text* debug = nullptr;
     
     bool bridgeWalkable = false;
+    float falling = 0;
 
     bool insideLadder();
     bool insideBridge();

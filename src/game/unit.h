@@ -77,7 +77,7 @@ private:
 
     // Map cell methods
     void updateGrid();
-    bool canOccupy(float newX, float newY, float newWidth, float newHeight);
+    bool canPlace(float newX, float newY, float newWidth, float newHeight);
     bool canMove(float dx, float dy);
 
     // Position methods
@@ -92,6 +92,8 @@ private:
     virtual void rotate(float deltaX, float deltaY); // optional, override per unit
     bool move(Uint64 deltaTime, float dirX, float dirY, float& deltaX, float& deltaY);
     bool move(Uint64 deltaTime, float dirX, float dirY); // <- new
+    virtual bool shouldCollide(Unit* target) const;
+    virtual int getKind() const;
 
 
     // Map related

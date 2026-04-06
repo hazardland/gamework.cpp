@@ -1,4 +1,5 @@
 #include "klad1/klad1.h"
+#include "klad1/bridge.h"
 #include "klad1/brick.h"
 #include "klad1/level.h"
 #include "klad1/levels/level1.h"
@@ -41,6 +42,7 @@ void Klad1::prepare(State* state) {
     };
 
     sprites[SPRITE_BRICK] = (new Sprite(image, CELL_WIDTH, CELL_HEIGHT))->addClip(1, 9, 1, 1, false, false);
+    sprites[SPRITE_BRIDGE] = (new Sprite(image, CELL_WIDTH, CELL_HEIGHT))->addClip(1, 8, 1, 1, false, false);
     sprites[SPRITE_PLAYER] = (new Sprite(image, CELL_WIDTH, CELL_HEIGHT, 133))
         ->addClip(1, 25, 1, 1, false, false)
         ->addClip(2, 26, 1, 2, false, false)
@@ -76,8 +78,13 @@ void Klad1::prepare(State* state) {
                     break;
 
                 case Level::BRIDGE:
-                    map->setCell(x, y, TERRAIN_BRIDGE, Level::BRIDGE);
+                {
+                    Bridge* bridge = new Bridge(sprites[SPRITE_BRIDGE]);
+                    bridge->setMap(map);
+                    bridge->setPosition(x * CELL_WIDTH, y * CELL_HEIGHT);
+                    addObject(bridge);
                     break;
+                }
 
                 case Level::WALL:
                     map->setCell(x, y, TERRAIN_WALL, Level::WALL);
