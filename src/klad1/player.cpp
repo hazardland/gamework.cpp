@@ -19,6 +19,7 @@ Player::Player(Sprite* sprite, TTF_Font* font) {
     setSize(22.0f, 17.6f);
     setLayer(1);
     allowTerrain(TERRAIN_BLANK);
+    allowTerrain(TERRAIN_BRIDGE);
     speed = 11.25f;
     body = new Animation(sprite, IDLE);
     renderPosition = createChildPosition(-6.6f, -5.5f, 35.2f, 24.2f);
@@ -52,15 +53,50 @@ bool Player::insideLadder() {
     return false;
 }
 
+bool Player::insideBridge() {
+    if (map == nullptr || !position->isReady()) {
+        return false;
+    }
+
+    float playerLeft = getX();
+    float playerRight = getX() + getWidth();
+
+    int fromX = std::clamp(static_cast<int>(getX() / map->cellWidth), 0, map->gridWidth - 1);
+    int fromY = std::clamp(static_cast<int>(getY() / map->cellHeight), 0, map->gridHeight - 1);
+    int toX = std::clamp(static_cast<int>((getX() + getWidth()) / map->cellWidth), 0, map->gridWidth - 1);
+    int toY = std::clamp(static_cast<int>((getY() + getHeight()) / map->cellHeight), 0, map->gridHeight - 1);
+
+    for (int x = fromX; x <= toX; x++) {
+        for (int y = fromY; y <= toY; y++) {
+            Terrain* terrain = map->grid[x][y]->terrain;
+            if (terrain != nullptr && terrain->id == TERRAIN_BRIDGE) {
+                float bridgeLeft = x * map->cellWidth;
+                float bridgeRight = x * map->cellWidth + map->cellWidth;
+                return playerLeft >= bridgeLeft && playerRight <= bridgeRight;
+            }
+        }
+    }
+
+    return false;
+}
+
+bool Player::isHalfBridge() {
+    return touchesTerrain(TERRAIN_BRIDGE) && !insideBridge();
+}
+
 void Player::update(State* state) {
     bool inLadder = insideLadder();
     bool aboveLadder = touchesTerrain(TERRAIN_LADDER, 2, 0, -2, 1) && !inLadder;
+    bool bridgeWalkable = touchesTerrain(TERRAIN_BRIDGE) && !isHalfBridge();
+    bool aboveBridge = touchesTerrain(TERRAIN_BRIDGE, 2, 0, -2, 1) && !bridgeWalkable;
     debug->setText(
         "L:" + std::to_string(inLadder) +
-        " A:" + std::to_string(aboveLadder)
+        " A:" + std::to_string(aboveLadder) +
+        " B:" + std::to_string(bridgeWalkable) +
+        " AB:" + std::to_string(aboveBridge)
     );
 
-    if (!inLadder && !aboveLadder && canMove(0, 1)) {
+    if (!inLadder && !aboveLadder && !bridgeWalkable && canMove(0, 1)) {
         float deltaX = 0;
         float deltaY = 0;
         move(state->clock->delta, 0, 1, deltaX, deltaY);

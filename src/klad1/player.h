@@ -28,6 +28,8 @@ private:
     Text* debug = nullptr;
 
     bool insideLadder();
+    bool insideBridge();
+    bool isHalfBridge();
 };
 
 #endif // KLAD1_PLAYER_H
