@@ -19,7 +19,6 @@ Player::Player(Sprite* sprite, TTF_Font* font) {
     setSize(22.0f, 17.6f);
     setLayer(1);
     allowTerrain(TERRAIN_BLANK);
-    allowTerrain(TERRAIN_BRIDGE);
     speed = 11.25f;
     body = new Animation(sprite, IDLE);
     renderPosition = createChildPosition(-6.6f, -5.5f, 35.2f, 24.2f);
@@ -56,32 +55,18 @@ bool Player::insideLadder() {
 void Player::update(State* state) {
     bool inLadder = insideLadder();
     bool aboveLadder = touchesTerrain(TERRAIN_LADDER, 2, 0, -2, 1) && !inLadder;
-    bool onBridge = touchesTerrain(TERRAIN_BRIDGE);
-    bool bridgeBelow = touchesTerrain(TERRAIN_BRIDGE, 0, getHeight(), 0, 1 - getHeight());
     debug->setText(
         "L:" + std::to_string(inLadder) +
-        " A:" + std::to_string(aboveLadder) +
-        " B:" + std::to_string(onBridge) +
-        " F:" + std::to_string(fallingThroughBridge)
+        " A:" + std::to_string(aboveLadder)
     );
 
-    if (!inLadder && !aboveLadder) {
-        if (onBridge && !fallingThroughBridge) {
-            // Bridge supports the player only when not already falling through it.
-        } else if (canMove(0, 1)) {
-            if (bridgeBelow || onBridge) {
-                fallingThroughBridge = true;
-            }
-
-            float deltaX = 0;
-            float deltaY = 0;
-            move(state->clock->delta, 0, 1, deltaX, deltaY);
-            body->play(IDLE);
-            body->update(state->clock->delta);
-            return;
-        } else {
-            fallingThroughBridge = false;
-        }
+    if (!inLadder && !aboveLadder && canMove(0, 1)) {
+        float deltaX = 0;
+        float deltaY = 0;
+        move(state->clock->delta, 0, 1, deltaX, deltaY);
+        body->play(IDLE);
+        body->update(state->clock->delta);
+        return;
     }
 
     Keyboard* key = state->input->keyboard;
@@ -108,9 +93,7 @@ void Player::update(State* state) {
     if (moveX != 0 || moveY != 0) {
         float deltaX = 0;
         float deltaY = 0;
-        if (move(state->clock->delta, moveX, moveY, deltaX, deltaY)) {
-            fallingThroughBridge = false;
-        }
+        move(state->clock->delta, moveX, moveY, deltaX, deltaY);
     }
 
     if (moveY != 0 && inLadder) {

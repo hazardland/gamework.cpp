@@ -26,7 +26,6 @@ private:
 
     Animation* body = nullptr;
     Text* debug = nullptr;
-    bool fallingThroughBridge = false;
 
     bool insideLadder();
 };
