@@ -1,4 +1,5 @@
 #include "klad1/player.h"
+#include "klad1/level.h"
 #include "klad1/terrain.h"
 
 #include "game/animation.h"
@@ -7,7 +8,6 @@
 #include "game/clock.h"
 #include "game/input.h"
 #include "game/map.h"
-#include "game/position.h"
 #include "game/sprite.h"
 #include "game/state.h"
 #include "game/terrain.h"
@@ -19,7 +19,6 @@ Player::Player(Sprite* sprite, TTF_Font* font) {
     setSize(22.0f, 17.6f);
     setLayer(1);
     allowTerrain(TERRAIN_BLANK);
-    allowTerrain(TERRAIN_BRIDGE);
     speed = 11.25f;
     body = new Animation(sprite, IDLE);
     renderPosition = createChildPosition(-6.6f, -5.5f, 35.2f, 24.2f);
@@ -27,7 +26,7 @@ Player::Player(Sprite* sprite, TTF_Font* font) {
 }
 
 bool Player::insideLadder() {
-    if (map == nullptr || !position->isReady()) {
+    if (map == nullptr) {
         return false;
     }
 
@@ -53,26 +52,36 @@ bool Player::insideLadder() {
     return false;
 }
 
-bool Player::insideBridge() {
-    if (map == nullptr || !position->isReady()) {
+bool Player::isOnBridgeTop() {
+    if (map == nullptr) {
         return false;
     }
 
-    float playerLeft = getX();
-    float playerRight = getX() + getWidth();
+    constexpr float supportMargin = 2.0f;
+    constexpr float supportTolerance = 2.0f;
 
-    int fromX = std::clamp(static_cast<int>(getX() / map->cellWidth), 0, map->gridWidth - 1);
-    int fromY = std::clamp(static_cast<int>(getY() / map->cellHeight), 0, map->gridHeight - 1);
-    int toX = std::clamp(static_cast<int>((getX() + getWidth()) / map->cellWidth), 0, map->gridWidth - 1);
-    int toY = std::clamp(static_cast<int>((getY()+1 + getHeight()) / map->cellHeight), 0, map->gridHeight - 1);
+    float feetY = getY() + getHeight();
+    float probeLeft = getX() + supportMargin;
+    float probeRight = getX() + getWidth() - supportMargin;
+
+    if (probeRight <= probeLeft) {
+        return false;
+    }
+
+    int fromX = std::clamp(static_cast<int>(probeLeft / map->cellWidth), 0, map->gridWidth - 1);
+    int toX = std::clamp(static_cast<int>((probeRight - 0.001f) / map->cellWidth), 0, map->gridWidth - 1);
+    int fromY = std::clamp(static_cast<int>(feetY / map->cellHeight), 0, map->gridHeight - 1);
+    int toY = std::clamp(static_cast<int>((feetY + supportTolerance) / map->cellHeight), 0, map->gridHeight - 1);
 
     for (int x = fromX; x <= toX; x++) {
         for (int y = fromY; y <= toY; y++) {
-            Terrain* terrain = map->grid[x][y]->terrain;
-            if (terrain != nullptr && terrain->id == TERRAIN_BRIDGE) {
-                float bridgeLeft = x * map->cellWidth;
-                float bridgeRight = x * map->cellWidth + map->cellWidth;
-                return playerLeft >= bridgeLeft && playerRight <= bridgeRight;
+            float bridgeTop = y * map->cellHeight;
+            if (std::fabs(feetY - bridgeTop) > supportTolerance) {
+                continue;
+            }
+
+            if (map->grid[x][y]->tile == Level::BRIDGE) {
+                return true;
             }
         }
     }
@@ -80,27 +89,56 @@ bool Player::insideBridge() {
     return false;
 }
 
-bool Player::isHalfBridge() {
-    return touchesTerrain(TERRAIN_BRIDGE, 0, 0, 0, 1);
+bool Player::isAboveBridge() {
+    if (map == nullptr) {
+        return false;
+    }
+
+    constexpr float supportMargin = 2.0f;
+    constexpr float supportTolerance = 2.0f;
+
+    float feetY = getY() + getHeight();
+    float probeLeft = getX() + supportMargin;
+    float probeRight = getX() + getWidth() - supportMargin;
+
+    if (probeRight <= probeLeft) {
+        return false;
+    }
+
+    int fromX = std::clamp(static_cast<int>(probeLeft / map->cellWidth), 0, map->gridWidth - 1);
+    int toX = std::clamp(static_cast<int>((probeRight - 0.001f) / map->cellWidth), 0, map->gridWidth - 1);
+    int fromY = std::clamp(static_cast<int>((feetY + 1) / map->cellHeight), 0, map->gridHeight - 1);
+    int toY = std::clamp(static_cast<int>((feetY + supportTolerance + 1) / map->cellHeight), 0, map->gridHeight - 1);
+
+    for (int x = fromX; x <= toX; x++) {
+        for (int y = fromY; y <= toY; y++) {
+            float bridgeTop = y * map->cellHeight;
+            if (bridgeTop <= feetY || bridgeTop - feetY > supportTolerance + 1) {
+                continue;
+            }
+
+            if (map->grid[x][y]->tile == Level::BRIDGE) {
+                return true;
+            }
+        }
+    }
+
+    return false;
 }
 
 void Player::update(State* state) {
     bool inLadder = insideLadder();
     bool aboveLadder = touchesTerrain(TERRAIN_LADDER, 2, 0, -2, 1) && !inLadder;
-    bool isInsideBridge = insideBridge();
-    if (!insideBridge()) {
-        bridgeWalkable = isHalfBridge();
-    }
-    // bool aboveBridge = touchesTerrain(TERRAIN_BRIDGE, 0, 0, 0, 1);
+    bool onBridgeTop = isOnBridgeTop();
+    bool aboveBridge = isAboveBridge();
     debug->setText(
         "L:" + std::to_string(inLadder) +
         " A:" + std::to_string(aboveLadder) +
-        " BW:" + std::to_string(bridgeWalkable) +
-        " IB:" + std::to_string(isInsideBridge)
+        " B:" + std::to_string(onBridgeTop) +
+        " AB:" + std::to_string(aboveBridge)
     );
 
-    if (!inLadder && !aboveLadder && !bridgeWalkable && canMove(0, 1)) {
-        bridgeWalkable = false;
+    if (!inLadder && !aboveLadder && !onBridgeTop && canMove(0, 1)) {
         float deltaX = 0;
         float deltaY = 0;
         move(state->clock->delta, 0, 1, deltaX, deltaY);

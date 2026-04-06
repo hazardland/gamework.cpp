@@ -26,12 +26,10 @@ private:
     
     Animation* body = nullptr;
     Text* debug = nullptr;
-    
-    bool bridgeWalkable = false;
 
     bool insideLadder();
-    bool insideBridge();
-    bool isHalfBridge();
+    bool isOnBridgeTop();
+    bool isAboveBridge();
 };
 
 #endif // KLAD1_PLAYER_H

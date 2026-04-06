@@ -36,8 +36,7 @@ void Klad1::prepare(State* state) {
         new Terrain(TERRAIN_BLANK, LAYER_WORLD, {0, 0, 0}),
         new Terrain(TERRAIN_WATER, LAYER_BACKGROUND, {0, 0, 0}),
         new Terrain(TERRAIN_WALL, LAYER_WORLD, {0, 0, 0}),
-        new Terrain(TERRAIN_LADDER, LAYER_WORLD, {0, 0, 0}),
-        new Terrain(TERRAIN_BRIDGE, LAYER_WORLD, {0, 0, 0})
+        new Terrain(TERRAIN_LADDER, LAYER_WORLD, {0, 0, 0})
     };
 
     sprites[SPRITE_BRICK] = (new Sprite(image, CELL_WIDTH, CELL_HEIGHT))->addClip(1, 9, 1, 1, false, false);
@@ -76,7 +75,7 @@ void Klad1::prepare(State* state) {
                     break;
 
                 case Level::BRIDGE:
-                    map->setCell(x, y, TERRAIN_BRIDGE, Level::BRIDGE);
+                    map->setCell(x, y, TERRAIN_BLANK, Level::BRIDGE);
                     break;
 
                 case Level::WALL:
