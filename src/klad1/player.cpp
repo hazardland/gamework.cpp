@@ -64,7 +64,7 @@ bool Player::insideBridge() {
     int fromX = std::clamp(static_cast<int>(getX() / map->cellWidth), 0, map->gridWidth - 1);
     int fromY = std::clamp(static_cast<int>(getY() / map->cellHeight), 0, map->gridHeight - 1);
     int toX = std::clamp(static_cast<int>((getX() + getWidth()) / map->cellWidth), 0, map->gridWidth - 1);
-    int toY = std::clamp(static_cast<int>((getY() + getHeight()) / map->cellHeight), 0, map->gridHeight - 1);
+    int toY = std::clamp(static_cast<int>((getY()+1 + getHeight()) / map->cellHeight), 0, map->gridHeight - 1);
 
     for (int x = fromX; x <= toX; x++) {
         for (int y = fromY; y <= toY; y++) {
@@ -81,22 +81,26 @@ bool Player::insideBridge() {
 }
 
 bool Player::isHalfBridge() {
-    return touchesTerrain(TERRAIN_BRIDGE) && !insideBridge();
+    return touchesTerrain(TERRAIN_BRIDGE, 0, 0, 0, 1);
 }
 
 void Player::update(State* state) {
     bool inLadder = insideLadder();
     bool aboveLadder = touchesTerrain(TERRAIN_LADDER, 2, 0, -2, 1) && !inLadder;
-    bool bridgeWalkable = touchesTerrain(TERRAIN_BRIDGE) && !isHalfBridge();
-    bool aboveBridge = touchesTerrain(TERRAIN_BRIDGE, 2, 0, -2, 1) && !bridgeWalkable;
+    bool isInsideBridge = insideBridge();
+    if (!insideBridge()) {
+        bridgeWalkable = isHalfBridge();
+    }
+    // bool aboveBridge = touchesTerrain(TERRAIN_BRIDGE, 0, 0, 0, 1);
     debug->setText(
         "L:" + std::to_string(inLadder) +
         " A:" + std::to_string(aboveLadder) +
-        " B:" + std::to_string(bridgeWalkable) +
-        " AB:" + std::to_string(aboveBridge)
+        " BW:" + std::to_string(bridgeWalkable) +
+        " IB:" + std::to_string(isInsideBridge)
     );
 
     if (!inLadder && !aboveLadder && !bridgeWalkable && canMove(0, 1)) {
+        bridgeWalkable = false;
         float deltaX = 0;
         float deltaY = 0;
         move(state->clock->delta, 0, 1, deltaX, deltaY);

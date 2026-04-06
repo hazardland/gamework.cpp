@@ -23,9 +23,11 @@ private:
     static constexpr int CLIMB = 2;
     static constexpr int RUN_LEFT = 3;
     static constexpr int RUN_RIGHT = 4;
-
+    
     Animation* body = nullptr;
     Text* debug = nullptr;
+    
+    bool bridgeWalkable = false;
 
     bool insideLadder();
     bool insideBridge();
