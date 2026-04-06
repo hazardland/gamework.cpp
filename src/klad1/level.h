@@ -12,6 +12,17 @@ struct Level {
     static constexpr int WIDTH = 32;
     static constexpr int HEIGHT = 22;
 
+    static constexpr int BLANK = 0;
+    static constexpr int GOLD = 1;
+    static constexpr int EXIT = 2;
+    static constexpr int DOOR = 3;
+    static constexpr int TIDE = 4;
+    static constexpr int WATER = 5;
+    static constexpr int LADDER = 6;
+    static constexpr int BRIDGE = 7;
+    static constexpr int BRICK = 8;
+    static constexpr int WALL = 9;
+
     int id;
     Position exit;
     Position playerSpawn;
@@ -19,5 +30,5 @@ struct Level {
     bool hasBonusLife;
     std::array<uint8_t, 6> keyGolds;
     uint8_t unknown;
-    std::array<std::array<uint8_t, WIDTH>, HEIGHT> tiles;
+    std::array<std::array<uint8_t, WIDTH>, HEIGHT> grid;
 };

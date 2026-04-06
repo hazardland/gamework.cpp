@@ -42,28 +42,41 @@ void Unit::select() {
 
 // Input dirX and dirY are directions -1, 0 or 1
 bool Unit::move (Uint64 deltaTime, float dirX, float dirY, float &deltaX, float &deltaY) {
+    float moveX = dirX;
+    float moveY = dirY;
 
-    if (dirX != 0 && dirY != 0) {
-        dirX *= 0.7071f;
-        dirY *= 0.7071f;
+    if (moveX != 0 && moveY != 0) {
+        moveX *= 0.7071f;
+        moveY *= 0.7071f;
     }
-    
-    deltaX = (dirX * (float)deltaTime) * (speed/100);
-    deltaY = (dirY * (float)deltaTime) * (speed/100);
 
-    if (deltaX!=0 && deltaY!=0 && canMove(deltaX, deltaY)) {
-        rotate(deltaX, deltaY);
-        addPosition(deltaX, deltaY);
+    float diagonalX = (moveX * (float)deltaTime) * (speed/100);
+    float diagonalY = (moveY * (float)deltaTime) * (speed/100);
+
+    deltaX = diagonalX;
+    deltaY = diagonalY;
+
+    if (diagonalX!=0 && diagonalY!=0 && canMove(diagonalX, diagonalY)) {
+        rotate(diagonalX, diagonalY);
+        addPosition(diagonalX, diagonalY);
         return true;
-    } else if (deltaX!=0 && canMove(deltaX, 0)) {
-        rotate(deltaX, 0);
-        addPosition(deltaX, 0);
+    }
+
+    float straightX = (dirX * (float)deltaTime) * (speed/100);
+    if (straightX!=0 && canMove(straightX, 0)) {
+        rotate(straightX, 0);
+        addPosition(straightX, 0);
+        deltaX = straightX;
         deltaY = 0;
         return true;
-    } else if (deltaY!=0 && canMove(0, deltaY)) {
-        rotate(0, deltaY);
-        addPosition(0, deltaY);
+    }
+
+    float straightY = (dirY * (float)deltaTime) * (speed/100);
+    if (straightY!=0 && canMove(0, straightY)) {
+        rotate(0, straightY);
+        addPosition(0, straightY);
         deltaX = 0;
+        deltaY = straightY;
         return true;
     }
 
@@ -259,6 +272,41 @@ bool Unit::isTerrainAllowed(int terrainId) const {
     return ignoresTerrain || (allowedTerrains & (1 << terrainId));
 }
 
+bool Unit::touchesTerrain(int terrainId, float offsetX, float offsetY, float offsetWidth, float offsetHeight) {
+    if (map == nullptr || !position->isReady()) {
+        return false;
+    }
+
+    float x = getX() + offsetX;
+    float y = getY() + offsetY;
+    float width = getWidth() + offsetWidth;
+    float height = getHeight() + offsetHeight;
+
+    if (width <= 0 || height <= 0) {
+        return false;
+    }
+
+    if (x < 0 || (x + width) > map->gridWidth * map->cellWidth ||
+        y < 0 || (y + height) > map->gridHeight * map->cellHeight) {
+        return false;
+    }
+
+    int fromX = std::clamp(static_cast<int>(x / map->cellWidth), 0, map->gridWidth - 1);
+    int fromY = std::clamp(static_cast<int>(y / map->cellHeight), 0, map->gridHeight - 1);
+    int toX = std::clamp(static_cast<int>((x + width) / map->cellWidth), 0, map->gridWidth - 1);
+    int toY = std::clamp(static_cast<int>((y + height) / map->cellHeight), 0, map->gridHeight - 1);
+
+    for (int x = fromX; x <= toX; x++) {
+        for (int y = fromY; y <= toY; y++) {
+            Terrain* terrain = map->grid[x][y]->terrain;
+            if (terrain != nullptr && terrain->id == terrainId) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
 
 bool Unit::hasMinimap() {
     return false;

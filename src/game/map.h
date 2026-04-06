@@ -26,11 +26,9 @@ private:
     Minimap* minimap = nullptr;
 
     int rand_(int min, int max);
-    void setTerrain(int x, int y, int type);
     int getTile(const std::array<int, 4>& corners);
     std::array<int, 4> getTileBorders(int x, int y);
     int calculateTile(int x, int y);
-    void fillMap();
 
 public:
 
@@ -49,6 +47,9 @@ public:
     float getWidth();
     float getHeight();
     void setMinimap(Minimap* minimap);
+    void setCell(int x, int y, int terrain, int tile);
+    void setTerrain(int x, int y, int type);
+    void fillMap();
     void import(std::vector<std::vector<int>> data);
     void generate(int seed, float intensity, std::vector<float> ranges);
     void setDebug(bool value);

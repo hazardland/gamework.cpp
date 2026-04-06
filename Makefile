@@ -23,8 +23,10 @@ endif
 BUILD_DIR := build
 
 GAME_SRC := $(wildcard src/game/*.cpp)
-WAR2_SRC := war2.cpp $(GAME_SRC) $(wildcard src/war2/*.cpp)
-KLAD1_SRC := klad1.cpp $(GAME_SRC) $(wildcard src/klad1/*.cpp)
+WAR2_SRC := war2_main.cpp $(GAME_SRC) $(wildcard src/war2/*.cpp)
+KLAD1_GAME_SRC := $(filter-out src/klad1/tilemap.cpp,$(wildcard src/klad1/*.cpp))
+KLAD1_LEVEL_SRC := $(wildcard src/klad1/levels/*.cpp)
+KLAD1_SRC := klad1_main.cpp $(GAME_SRC) $(KLAD1_GAME_SRC) $(KLAD1_LEVEL_SRC)
 
 WAR2_OBJ := $(patsubst %.cpp,$(BUILD_DIR)/%.o,$(WAR2_SRC))
 KLAD1_OBJ := $(patsubst %.cpp,$(BUILD_DIR)/%.o,$(KLAD1_SRC))
@@ -41,6 +43,12 @@ war2: $(WAR2_OBJ)
 
 klad1: $(KLAD1_OBJ)
 	$(CXX) $(CXXFLAGS) -o $@ $(KLAD1_OBJ) $(LDFLAGS)
+
+run-war2: war2
+	./war2
+
+run-klad1: klad1
+	./klad1
 
 # Compilation step (separate object files in build/)
 $(BUILD_DIR)/%.o: %.cpp | $(BUILD_DIR) $(OBJ_DIRS)

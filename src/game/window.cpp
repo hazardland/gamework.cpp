@@ -129,10 +129,27 @@ int Window::run() {
     bool running = true;
 
     while (!state->input->close) {
+        static bool first = true;
+        if (first) {
+            printf("Window loop: tick\n");
+        }
         state->clock->tick();
+        if (first) {
+            printf("Window loop: fetch\n");
+        }
         state->input->fetch();
+        if (first) {
+            printf("Window loop: update\n");
+        }
         scene->update(state);
+        if (first) {
+            printf("Window loop: render\n");
+        }
         scene->render(state);
+        if (first) {
+            printf("Window loop: first frame done\n");
+            first = false;
+        }
     }
 
     return 0;

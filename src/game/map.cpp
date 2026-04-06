@@ -132,6 +132,12 @@ void Map::setTerrain(int x, int y, int type) {
     }
 }
 
+void Map::setCell(int x, int y, int terrain, int tile) {
+    setTerrain(x, y, terrain);
+    grid[x][y]->tile = tile;
+    grid[x][y]->rect = &clip->getFrame(tile)->rect;
+}
+
 void Map::setMinimap(Minimap* minimap) {
     this->minimap = minimap;
     minimap->setMapData(grid, cellWidth, cellHeight);
@@ -234,8 +240,21 @@ void Map::fillMap() {
 
 int Map::getTile(const std::array<int, 4>& corners) {
     int key = corners[0] * 1000 + corners[1] * 100 + corners[2] * 10 + corners[3];
-    // std::cout << "tile: " << corners[0] << corners[1] << corners[2] << corners[3] << std::endl;
-    return tiles[key][rand_(0, tiles[key].size() - 1)];
+    auto it = tiles.find(key);
+
+    if (it == tiles.end() || it->second.empty()) {
+        printf(
+            "Map::getTile missing key %d for corners {%d,%d,%d,%d}\n",
+            key,
+            corners[0],
+            corners[1],
+            corners[2],
+            corners[3]
+        );
+        return 0;
+    }
+
+    return it->second[rand_(0, it->second.size() - 1)];
 }
 
 int Map::calculateTile(int x, int y) {

@@ -104,6 +104,7 @@ private:
     void removeTerrain(int terrainId);               // Remove a terrain
     void ignoreTerrain();                                // Mark unit as flying
     bool isTerrainAllowed(int terrainId) const;      // Check if terrain is allowed
+    bool touchesTerrain(int terrainId, float offsetX = 0, float offsetY = 0, float offsetWidth = 0, float offsetHeight = 0);
 
     // Minimap related
     virtual bool hasMinimap();

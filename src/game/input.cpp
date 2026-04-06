@@ -6,11 +6,21 @@ void Input::setWindow(Window* window) {
 }
 
 void Input::fetch() {
+    static bool first = true;
+    if (first) {
+        printf("Input::fetch start\n");
+    }
     keyboard->reset();
     mouse->reset();
 
     //SDL_SetWindowTitle(window, to_string(clock.avgFps).c_str());
+    if (first) {
+        printf("Input::fetch before mouse state\n");
+    }
     SDL_GetMouseState(&mouse->x, &mouse->y);
+    if (first) {
+        printf("Input::fetch after mouse state\n");
+    }
 
         // If drag ended in previous tick we reset drag
         if (mouse->rightDragEnded) {
@@ -43,7 +53,13 @@ void Input::fetch() {
         }
 
         SDL_Event event;
+        if (first) {
+            printf("Input::fetch before poll\n");
+        }
         while(SDL_PollEvent(&event)){
+            if (first) {
+                printf("Input::fetch event type=%u\n", event.type);
+            }
 
             switch(event.type){
                 case SDL_EVENT_QUIT:
@@ -152,6 +168,9 @@ void Input::fetch() {
             }
 
         }
+    if (first) {
+        printf("Input::fetch after poll\n");
+    }
 
     // update keyboard state here
     keyboard->keys = SDL_GetKeyboardState(nullptr);
@@ -239,6 +258,11 @@ void Input::fetch() {
         keyboard->tab = true;
     } else {
         keyboard->tab = false;
+    }
+
+    if (first) {
+        printf("Input::fetch done\n");
+        first = false;
     }
 
 }
