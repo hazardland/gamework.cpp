@@ -7,7 +7,7 @@ Tree::Tree(Sprite* sprite) {
     setSize(20, 20);
     allowTerrain(2);
     setColor ({34, 139, 34, 255});
-    renderPosition = createChildPosition(-22, -76, 64, 96);
+    renderPosition = relativePosition(-22, -76, 64, 96);
     body = sprite;
 }
 

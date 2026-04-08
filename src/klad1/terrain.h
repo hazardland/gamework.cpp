@@ -8,3 +8,5 @@ static constexpr int TERRAIN_LADDER = 3;
 static constexpr int TERRAIN_BRIDGE = 4;
 
 #endif // KLAD1_TERRAIN_H
+
+

@@ -4,17 +4,12 @@
 #define GAME_POSITION_H
 
 #include <SDL3_image/SDL_image.h>
-#include <game/state.h>
 
-/**
- * @class Position
- * @brief Class for representing and manipulating a position in a 2D space.
- *
- * Position contains x and y coordinates, width, height, and related operations.
- * It also handles parent-child relationships between objects.
- */
 class Position {
 public:
+    // If parent pointers are passed, this position becomes relative to the parent.
+    // Child positions work by storing pointers to the parent's rect fields.
+    // Example: Object::relativePosition(...) links a render/select box to the main position.
     Position(float x, float y, float width, float height,
              float* parentX, float* parentY,
              float* parentWidth, float* parentHeight);
@@ -26,7 +21,7 @@ public:
     Position(float width, float height);
     Position();
 
-    ~Position() = default; // Add a virtual destructor
+    ~Position() = default;
 
     float getX();
     float getY();
@@ -40,9 +35,14 @@ public:
     void setHeight(float height);
     void setWidth(float width);
 
-    void setRequiresUpdate();  // Mark that recalculation is needed
+    void setRequiresUpdate();
     SDL_FRect* getPosition();
-    void draw(State* state);
+    bool intersects(SDL_FRect* target, float right = 0, float top = 0, float left = 0, float bottom = 0);
+    bool intersects(Position* target, float right = 0, float top = 0, float left = 0, float bottom = 0);
+    float* getXPtr();
+    float* getYPtr();
+    float* getWidthPtr();
+    float* getHeightPtr();
     bool isReady();
 
     SDL_FRect rect;
@@ -61,8 +61,9 @@ private:
     float y;
     float width;
     float height;
-    SDL_Color color = SDL_Color{161, 195, 69, 255};
     bool ready = false;
 };
 
 #endif // GAME_POSITION_H
+
+

@@ -32,3 +32,5 @@ struct Level {
     uint8_t unknown;
     std::array<std::array<uint8_t, WIDTH>, HEIGHT> grid;
 };
+
+

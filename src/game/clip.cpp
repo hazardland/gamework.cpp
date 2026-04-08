@@ -9,38 +9,32 @@ Clip::Clip(Image* image, int frameWidth, int frameHeight, int startCell, int sta
     this->framePause = framePause;
     this->frameCount = frameCount;
     frames = new Frame[frameCount];
-    int cellCount = image->getWidth()/frameWidth;
-    int rowCount = image->getHeight()/frameHeight;
+    int cellCount = image->getWidth() / frameWidth;
+    int rowCount = image->getHeight() / frameHeight;
     int cell = startCell;
     int row = startRow;
 
     // Create frames
-    for (int i = 0; i < frameCount; i++)
-    {
-        frames[i].rect.x = (cell-1) * frameWidth;
-        frames[i].rect.y = (row-1) * frameHeight;
+    for (int i = 0; i < frameCount; i++) {
+        frames[i].rect.x = cell * frameWidth;
+        frames[i].rect.y = row * frameHeight;
         frames[i].rect.w = frameWidth;
         frames[i].rect.h = frameHeight;
         frames[i].flipX = flipX;
         frames[i].flipY = flipY;
         frames[i].cacheFlip();
 
-        if (!(i<frameCount)) {
-            break;
-        }
-
         // Update cell and row for next frame
         if (readVertically) {
-            if (row == rowCount) {
-                row = 1;
+            if (row == rowCount - 1) {
+                row = 0;
                 cell += 1;
             } else {
                 row += 1;
             }
-        }
-        else {
-            if (cell == cellCount) {
-                cell = 1;
+        } else {
+            if (cell == cellCount - 1) {
+                cell = 0;
                 row += 1;
             } else {
                 cell += 1;
@@ -64,3 +58,5 @@ int Clip::getFramePause() {
 Clip::~Clip() {
     delete[] frames;
 }
+
+

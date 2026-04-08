@@ -320,3 +320,5 @@ void Client::enableAutoReconnect(bool enable) {
 // void Client::setMaxQueueSize(size_t maxSize) {
 //     maxQueueSize = maxSize;
 // }
+
+

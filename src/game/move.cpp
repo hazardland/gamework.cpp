@@ -2,7 +2,7 @@
 
 #include "game/move.h"
 #include "game/unit.h"
-#include "game/state.h"
+#include "game/context.h"
 #include "game/clock.h"
 #include <SDL3/SDL.h>
 
@@ -15,8 +15,8 @@ Move::Move(Unit* unit, float travelX, float travelY) {
 }
 Move::~Move() {}
 
-bool Move::update(State* state) {
-    Uint64 deltaTime = state->clock->delta;
+bool Move::update(Context* context) {
+    Uint64 deltaTime = context->clock->delta;
 
     // Stop early if we’re already close enough
     if ((travelX > -0.05f && travelX < 0.05f) &&
@@ -49,8 +49,8 @@ bool Move::update(State* state) {
     return moved;
 }
 
-// bool Move::update(State* state) {
-//     Uint64 deltaTime = state->clock->delta;
+// bool Move::update(Context* context) {
+//     Uint64 deltaTime = context->clock->delta;
 
 //     // Stop early if we’re already close enough
 //     if ((travelX > -0.05f && travelX < 0.05f) &&
@@ -91,7 +91,7 @@ bool Move::update(State* state) {
 // }
 
 
-void Move::render (State* state) {
+void Move::render (Context* context) {
     // printf("travel: %f, %f\n", travelX, travelY);
 }
 
@@ -100,3 +100,4 @@ std::vector<Job*> Move::finish() {
         // new Move(unit, (float)(rand() % 1001 - 500), (float)(rand() % 1001 - 500))
     };
 }
+

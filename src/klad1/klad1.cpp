@@ -1,6 +1,7 @@
 #include "klad1/klad1.h"
 #include "klad1/bridge.h"
 #include "klad1/brick.h"
+#include "klad1/ladder.h"
 #include "klad1/level.h"
 #include "klad1/levels/level1.h"
 #include "klad1/player.h"
@@ -9,45 +10,37 @@
 #include "game/clip.h"
 #include "game/frame.h"
 #include "game/image.h"
-#include "game/map.h"
+#include "game/world.h"
 #include "game/sprite.h"
-#include "game/state.h"
-#include "game/terrain.h"
+#include "game/context.h"
 
 #include <SDL3_ttf/SDL_ttf.h>
 
-void Klad1::prepare(State* state) {
-    Scene::prepare(state);
+void Klad1::prepare(Context* context) {
+    Scene::prepare(context);
 
     image = new Image(renderer, "assets/klad1/sprites.png");
     font = TTF_OpenFont("assets/war2/fonts/titillium.ttf", 12);
     TTF_SetFontOutline(font, 1);
+    setDebugFont(font);
 
-    map = new Map(
+    world = new World(
         image,
         CELL_WIDTH,
         CELL_HEIGHT,
         Level::WIDTH,
         Level::HEIGHT,
-        2,
-        font
+        2
     );
 
-    map->terrains = {
-        new Terrain(TERRAIN_BLANK, LAYER_WORLD, {0, 0, 0}),
-        new Terrain(TERRAIN_WATER, LAYER_BACKGROUND, {0, 0, 0}),
-        new Terrain(TERRAIN_WALL, LAYER_WORLD, {0, 0, 0}),
-        new Terrain(TERRAIN_LADDER, LAYER_WORLD, {0, 0, 0}),
-        new Terrain(TERRAIN_BRIDGE, LAYER_WORLD, {0, 0, 0})
-    };
-
-    sprites[SPRITE_BRICK] = (new Sprite(image, CELL_WIDTH, CELL_HEIGHT))->addClip(1, 9, 1, 1, false, false);
-    sprites[SPRITE_BRIDGE] = (new Sprite(image, CELL_WIDTH, CELL_HEIGHT))->addClip(1, 8, 1, 1, false, false);
+    sprites[SPRITE_BRICK] = (new Sprite(image, CELL_WIDTH, CELL_HEIGHT))->addClip(1, 8, 0, 1, false, false);
+    sprites[SPRITE_BRIDGE] = (new Sprite(image, CELL_WIDTH, CELL_HEIGHT))->addClip(1, 7, 0, 1, false, false);
+    sprites[SPRITE_LADDER] = (new Sprite(image, CELL_WIDTH, CELL_HEIGHT))->addClip(1, 6, 0, 1, false, false);
     sprites[SPRITE_PLAYER] = (new Sprite(image, CELL_WIDTH, CELL_HEIGHT, 133))
-        ->addClip(1, 25, 1, 1, false, false)
-        ->addClip(2, 26, 1, 2, false, false)
-        ->addClip(3, 27, 1, 4, false, false)
-        ->addClip(4, 27, 1, 4, true, false);
+        ->addClip(1, 24, 0, 1, false, false)
+        ->addClip(2, 25, 0, 2, false, false)
+        ->addClip(3, 26, 0, 4, false, false)
+        ->addClip(4, 26, 0, 4, true, false);
 
     Clip* climbClip = sprites[SPRITE_PLAYER]->getClip(2);
     climbClip->frames[1].rect = climbClip->frames[0].rect;
@@ -58,36 +51,49 @@ void Klad1::prepare(State* state) {
     for (int y = 0; y < Level::HEIGHT; y++) {
         for (int x = 0; x < Level::WIDTH; x++) {
             uint8_t value = level1.grid[y][x];
-            map->setCell(x, y, TERRAIN_BLANK, Level::BLANK);
+            world->setCell(x, y, TILE_BLANK, Level::BLANK);
 
             switch (value) {
                 case Level::WATER:
-                    map->setCell(x, y, TERRAIN_WATER, Level::WATER);
+                    world->setCell(x, y, TILE_WATER, Level::WATER);
                     break;
 
                 case Level::BRICK: {
-                    Brick* brick = new Brick(sprites[SPRITE_BRICK]);
-                    brick->setMap(map);
-                    brick->setPosition(x * CELL_WIDTH, y * CELL_HEIGHT);
+                    Brick* brick = new Brick(
+                        sprites[SPRITE_BRICK],
+                        x * CELL_WIDTH,
+                        y * CELL_HEIGHT
+                    );
+                    brick->setWorld(world);
                     addObject(brick);
                     break;
                 }
 
-                case Level::LADDER:
-                    map->setCell(x, y, TERRAIN_LADDER, Level::LADDER);
+                case Level::LADDER: {
+                    Ladder* ladder = new Ladder(
+                        sprites[SPRITE_LADDER],
+                        x * CELL_WIDTH,
+                        y * CELL_HEIGHT
+                    );
+                    ladder->setWorld(world);
+                    addObject(ladder);
                     break;
+                }
 
                 case Level::BRIDGE:
                 {
-                    Bridge* bridge = new Bridge(sprites[SPRITE_BRIDGE]);
-                    bridge->setMap(map);
-                    bridge->setPosition(x * CELL_WIDTH, y * CELL_HEIGHT);
+                    Bridge* bridge = new Bridge(
+                        sprites[SPRITE_BRIDGE],
+                        x * CELL_WIDTH,
+                        y * CELL_HEIGHT
+                    );
+                    bridge->setWorld(world);
                     addObject(bridge);
                     break;
                 }
 
                 case Level::WALL:
-                    map->setCell(x, y, TERRAIN_WALL, Level::WALL);
+                    world->setCell(x, y, TILE_WALL, Level::WALL);
                     break;
 
                 default:
@@ -96,18 +102,19 @@ void Klad1::prepare(State* state) {
         }
     }
 
-    player = new Player(sprites[SPRITE_PLAYER], font);
-    player->setMap(map);
-    player->allowTerrain(TERRAIN_LADDER);
-    player->setPosition(
+    player = new Player(
+        sprites[SPRITE_PLAYER],
         level1.playerSpawn.x * CELL_WIDTH,
         level1.playerSpawn.y * CELL_HEIGHT
     );
+    player->setWorld(world);
     addObject(player);
 
-    state->camera->setZoom(1.5f);
+    addFps(font);
+
+    context->camera->setZoom(1.5f);
 }
 
-void Klad1::update(State* state) {
-    Scene::update(state);
+void Klad1::update(Context* context) {
+    Scene::update(context);
 }

@@ -5,21 +5,21 @@
 
 class Animation;
 class Sprite;
-class State;
+class Context;
 
 class Brick : public Unit {
 public:
-    Brick(Sprite* sprite);
+    Brick(Sprite* sprite, float x, float y);
 
-    void update(State* state) override;
-    void render(State* state) override;
+    void update(Context* context) override;
+    void render(Context* context) override;
 
     ~Brick();
 
 private:
-    static constexpr int WIDTH = 32;
-    static constexpr int HEIGHT = 22;
     Animation* body = nullptr;
 };
 
 #endif // KLAD1_BRICK_H
+
+

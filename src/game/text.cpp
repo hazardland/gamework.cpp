@@ -5,7 +5,7 @@
 
 
 #include "game/object.h"
-#include "game/state.h"
+#include "game/context.h"
 #include "game/camera.h"
 #include "game/position.h"
 
@@ -52,7 +52,7 @@ Text* Text::enableCache() {
     return this;
 }
 
-void Text::render(State* state, Position* position) {
+void Text::render(Context* context, Position* position) {
     if (!visible || text.empty()) {
         return;
     }
@@ -84,7 +84,7 @@ void Text::render(State* state, Position* position) {
                     SDL_DestroyTexture(texture);
                 }
             }
-            texture = SDL_CreateTextureFromSurface(state->renderer, surface);
+            texture = SDL_CreateTextureFromSurface(context->renderer, surface);
             if (cacheEnabled) {
                 cache[text] = texture;
             }
@@ -94,14 +94,14 @@ void Text::render(State* state, Position* position) {
     }
     // printf("rendering tex");
     if (positionFixed) {
-        SDL_RenderTexture(state->renderer, texture, NULL, position->getPosition());
+        SDL_RenderTexture(context->renderer, texture, NULL, position->getPosition());
     } else {
-        SDL_RenderTexture(state->renderer, texture, NULL, state->camera->translate(position->getPosition()));
+        SDL_RenderTexture(context->renderer, texture, NULL, context->camera->translate(position->getPosition()));
     }
 }
 
-void Text::render(State* state) {
-    render(state, position);
+void Text::render(Context* context) {
+    render(context, position);
 }
 
 Text* Text::setPositionFixed(bool value) {
@@ -122,3 +122,6 @@ Text::~Text() {
     //     SDL_DestroyTexture(item.second);
     // }
 }
+
+
+

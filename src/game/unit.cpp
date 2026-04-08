@@ -1,25 +1,33 @@
 #include "game/unit.h"
 
+#include "game/context.h"
 #include "game/position.h"
-#include "game/map.h"
+#include "game/world.h"
 #include "game/cell.h"
-#include "game/terrain.h"
 #include "game/camera.h"
-#include "game/minimap.h"
+#include <functional>
 #include <algorithm>
 
 
-Unit* Unit::setMap(Map* map) {
-    this->map = map;
+Unit* Unit::setWorld(World* world) {
+    this->world = world;
+    updateGrid();
     return this;
 }
 
-void Unit::render(State* state) {
+bool Unit::isVisible(Context* context) {
+    return context->camera->isVisible(getRenderPosition());
+}
+
+void Unit::render(Context* context) {
     // Implement your rendering logic here
 }
 
 SDL_FRect* Unit::getRenderPosition() {
-    return renderPosition->getPosition();
+    if (renderPosition != nullptr) {
+        return renderPosition->getPosition();
+    }
+    return getPosition();
 }
 
 void Unit::addPosition(float x, float y) {
@@ -95,16 +103,20 @@ void Unit::rotate(float deltaX, float deltaY) {
 
 };
 
-bool Unit::shouldCollide(Unit* target) const {
-    return true;
+bool Unit::canCrossUnit(Unit* target) const {
+    return false;
 }
 
-int Unit::getKind() const {
+bool Unit::canCrossTile(int type) const {
+    return isTileAllowed(type);
+}
+
+int Unit::getType() const {
     return 0;
 }
 
 bool Unit::canMove(float deltaX, float deltaY) {
-    if (map==nullptr) {
+    if (world==nullptr) {
         return true;
     }
 
@@ -123,32 +135,27 @@ bool Unit::canMove(float deltaX, float deltaY) {
 
 bool Unit::canPlace(float newX, float newY, float newWidth, float newHeight) {
 
-    if (map==nullptr) {
+    if (world==nullptr) {
         return true;
     }
 
-    // Fail fast if out of map bounds
-    if (newX < 0 || (newX + newWidth) > map->gridWidth * map->cellWidth ||
-        newY < 0 || (newY + newHeight) > map->gridHeight * map->cellHeight) {
+    // Fail fast if out of world bounds
+    if (newX < 0 || (newX + newWidth) > world->gridWidth * world->cellWidth ||
+        newY < 0 || (newY + newHeight) > world->gridHeight * world->cellHeight) {
         return false;
     }
 
     // Compute occupied grid cells
-    int newGridFromX = std::clamp(static_cast<int>(newX / map->cellWidth), 0, map->gridWidth - 1);
-    int newGridFromY = std::clamp(static_cast<int>(newY / map->cellHeight), 0, map->gridHeight - 1);
-    int newGridToX = std::clamp(static_cast<int>((newX + newWidth) / map->cellWidth), 0, map->gridWidth - 1);
-    int newGridToY = std::clamp(static_cast<int>((newY + newHeight) / map->cellHeight), 0, map->gridHeight - 1);
+    int newGridFromX = std::clamp(static_cast<int>(newX / world->cellWidth), 0, world->gridWidth - 1);
+    int newGridFromY = std::clamp(static_cast<int>(newY / world->cellHeight), 0, world->gridHeight - 1);
+    int newGridToX = std::clamp(static_cast<int>((newX + newWidth) / world->cellWidth), 0, world->gridWidth - 1);
+    int newGridToY = std::clamp(static_cast<int>((newY + newHeight) / world->cellHeight), 0, world->gridHeight - 1);
 
-    // First check terrain (Fail fast)
+    // First check tile crossing (Fail fast)
     for (int i = newGridFromX; i <= newGridToX; i++) {
         for (int j = newGridFromY; j <= newGridToY; j++) {
-            Cell* cell = map->grid[i][j];
-            // if (!cell) continue;  // Avoid null pointer crash
-
-            if (cell->terrain->layer != getLayer() && getLayer() != 0) {
-                return false;
-            }
-            if (!ignoresTerrain && !isTerrainAllowed(cell->terrain->id)) {
+            Cell* cell = world->grid[i][j];
+            if (!canCrossTile(cell->type)) {
                 return false;
             }
         }
@@ -157,14 +164,13 @@ bool Unit::canPlace(float newX, float newY, float newWidth, float newHeight) {
     // Now check for unit collisions only if terrain check passed
     for (int i = newGridFromX; i <= newGridToX; i++) {
         for (int j = newGridFromY; j <= newGridToY; j++) {
-            Cell* cell = map->grid[i][j];
+            Cell* cell = world->grid[i][j];
             // if (!cell) continue;  // Prevent null pointer crash
 
             auto& objects = cell->units[getLayer()];
             for (const auto& object : objects) {
-                // Skip self-check
                 if (object == this) continue;
-                if (!shouldCollide(object)) continue;
+                if (canCrossUnit(object)) continue;
 
                 // Now do collision check inside cell
                 if (newX < object->getX() + object->getWidth() &&
@@ -183,15 +189,15 @@ bool Unit::canPlace(float newX, float newY, float newWidth, float newHeight) {
 }
 
 void Unit::updateGrid() {
-    if (map==nullptr || !position->isReady()) {
+    if (world==nullptr || !position->isReady()) {
         return;
     }
 
     // Calculate the new cells this object should occupy
-    int newGridFromX = std::clamp(static_cast<int>(getX() / map->cellWidth), 0, map->gridWidth - 1);
-    int newGridFromY = std::clamp(static_cast<int>(getY() / map->cellHeight), 0, map->gridHeight - 1);
-    int newGridToX = std::clamp(static_cast<int>((getX() + getWidth()) / map->cellWidth), 0, map->gridWidth - 1);
-    int newGridToY = std::clamp(static_cast<int>((getY() + getHeight()) / map->cellHeight), 0, map->gridHeight - 1);
+    int newGridFromX = std::clamp(static_cast<int>(getX() / world->cellWidth), 0, world->gridWidth - 1);
+    int newGridFromY = std::clamp(static_cast<int>(getY() / world->cellHeight), 0, world->gridHeight - 1);
+    int newGridToX = std::clamp(static_cast<int>((getX() + getWidth()) / world->cellWidth), 0, world->gridWidth - 1);
+    int newGridToY = std::clamp(static_cast<int>((getY() + getHeight()) / world->cellHeight), 0, world->gridHeight - 1);
 
     if (gridSet) {
 
@@ -208,7 +214,7 @@ void Unit::updateGrid() {
                     // Remove the unit from this grid cell
                     // printf("Remove gridToX:%d, %d,%d ", gridToX, i , j);
 
-                    map->grid[i][j]->units[getLayer()].remove(this);
+                    world->grid[i][j]->units[getLayer()].remove(this);
                 }
             }
         }
@@ -222,12 +228,10 @@ void Unit::updateGrid() {
             if (!gridSet || i < gridFromX || i > gridToX || j < gridFromY || j > gridToY) {
                 // Add new cells to grid cell
                 // printf("Add %d,%d ", i , j);
-                map->grid[i][j]->units[getLayer()].push_back(this);
+                world->grid[i][j]->units[getLayer()].push_back(this);
             }
         }
     }
-
-    map->markModified();
 
     gridFromX = newGridFromX;
     gridFromY = newGridFromY;
@@ -236,12 +240,6 @@ void Unit::updateGrid() {
     gridSet = true;
 
 
-}
-
-void Unit::drawPosition(State* state) {
-    SDL_SetRenderDrawColor(state->renderer, 161, 195, 69, 255);
-    SDL_RenderRect(state->renderer, state->camera->translate(getPosition()));
-    SDL_SetRenderDrawColor(state->renderer, 0, 0, 0, 0);
 }
 
 int Unit::getLayer() {
@@ -253,36 +251,31 @@ void Unit::setLayer(int layer) {
 }
 
 
-// Allow a single terrain
-void Unit::allowTerrain(int terrainId) {
-    ignoresTerrain = false;
-    allowedTerrains |= (1 << terrainId);
+void Unit::allowTile(int tileId) {
+    ignoresTiles = false;
+    allowedTiles |= (1 << tileId);
 }
 
-// Allow multiple terrains
-void Unit::allowTerrains(std::initializer_list<int> terrains) {
-    for (int terrainId : terrains) {
-        allowTerrain(terrainId);
+void Unit::allowTiles(std::initializer_list<int> tiles) {
+    for (int tileId : tiles) {
+        allowTile(tileId);
     }
 }
 
-// Remove a terrain
-void Unit::removeTerrain(int terrainId) {
-    allowedTerrains &= ~(1 << terrainId);
+void Unit::removeTile(int tileId) {
+    allowedTiles &= ~(1 << tileId);
 }
 
-// Mark the unit as flying (ignores terrain)
-void Unit::ignoreTerrain() {
-    ignoresTerrain = true;
+void Unit::ignoreTiles() {
+    ignoresTiles = true;
 }
 
-// Check if terrain is allowed (Flying units ignore terrain)
-bool Unit::isTerrainAllowed(int terrainId) const {
-    return ignoresTerrain || (allowedTerrains & (1 << terrainId));
+bool Unit::isTileAllowed(int tileId) const {
+    return ignoresTiles || (allowedTiles & (1 << tileId));
 }
 
-bool Unit::touchesTerrain(int terrainId, float offsetX, float offsetY, float offsetWidth, float offsetHeight) {
-    if (map == nullptr || !position->isReady()) {
+bool Unit::touchesTile(int type, float offsetX, float offsetY, float offsetWidth, float offsetHeight) {
+    if (world == nullptr || !position->isReady()) {
         return false;
     }
 
@@ -295,20 +288,19 @@ bool Unit::touchesTerrain(int terrainId, float offsetX, float offsetY, float off
         return false;
     }
 
-    if (x < 0 || (x + width) > map->gridWidth * map->cellWidth ||
-        y < 0 || (y + height) > map->gridHeight * map->cellHeight) {
+    if (x < 0 || (x + width) > world->gridWidth * world->cellWidth ||
+        y < 0 || (y + height) > world->gridHeight * world->cellHeight) {
         return false;
     }
 
-    int fromX = std::clamp(static_cast<int>(x / map->cellWidth), 0, map->gridWidth - 1);
-    int fromY = std::clamp(static_cast<int>(y / map->cellHeight), 0, map->gridHeight - 1);
-    int toX = std::clamp(static_cast<int>((x + width) / map->cellWidth), 0, map->gridWidth - 1);
-    int toY = std::clamp(static_cast<int>((y + height) / map->cellHeight), 0, map->gridHeight - 1);
+    int fromX = std::clamp(static_cast<int>(x / world->cellWidth), 0, world->gridWidth - 1);
+    int fromY = std::clamp(static_cast<int>(y / world->cellHeight), 0, world->gridHeight - 1);
+    int toX = std::clamp(static_cast<int>((x + width) / world->cellWidth), 0, world->gridWidth - 1);
+    int toY = std::clamp(static_cast<int>((y + height) / world->cellHeight), 0, world->gridHeight - 1);
 
     for (int x = fromX; x <= toX; x++) {
         for (int y = fromY; y <= toY; y++) {
-            Terrain* terrain = map->grid[x][y]->terrain;
-            if (terrain != nullptr && terrain->id == terrainId) {
+            if (world->grid[x][y]->type == type) {
                 return true;
             }
         }
@@ -317,22 +309,18 @@ bool Unit::touchesTerrain(int terrainId, float offsetX, float offsetY, float off
     return false;
 }
 
-bool Unit::hasMinimap() {
-    return false;
+bool Unit::touchesUnit(int kind, float right, float top, float left, float bottom) {
+    bool found = false;
+    scanUnits(right, top, left, bottom, [&](Unit* unit) {
+        if (unit->getType() != kind) {
+            return true;
+        }
+
+        found = true;
+        return false;
+    });
+    return found;
 }
-
-// Uint32 Unit::getMinimapColor(const SDL_PixelFormatDetails* format) {
-//     if (minimapColorCache==0) {
-//         minimapColorCache = SDL_MapRGBA(format, nullptr, minimapColor.r, minimapColor.g, minimapColor.b, minimapColor.a);
-//     }
-//     return minimapColorCache;
-// }
-
-// void Unit::setMinimapColor(SDL_Color color) {
-//     minimapColorCache = 0;
-//     minimapColor = color;
-// }
-
 
 SDL_Color* Unit::getColor() {
     return &color;
@@ -368,7 +356,7 @@ void Unit::onJobFinished (Job* job) {
 
 }
 
-void Unit::updateJobs(State* state) {
+void Unit::updateJobs(Context* context) {
     std::vector<Job*> newJobs;
     if (jobs.size() > 2) {
         newJobs.reserve(jobs.size());
@@ -377,7 +365,7 @@ void Unit::updateJobs(State* state) {
     for (auto it = jobs.begin(); it != jobs.end();) {
         Job* job = *it;
 
-        if (!job->update(state)) {
+        if (!job->update(context)) {
             auto childJobs = job->finish();
 
             if (!childJobs.empty()) {
@@ -402,9 +390,9 @@ void Unit::updateJobs(State* state) {
     }
 }
 
-void Unit::renderJobs(State* state) {
+void Unit::renderJobs(Context* context) {
     for (Job* job : jobs) {
-        job->render(state); // no check needed — base is empty
+        job->render(context);
     }
 }
 
@@ -462,3 +450,6 @@ Unit::~Unit() {
     delete renderPosition;
     delete selectPosition;
 }
+
+
+

@@ -32,7 +32,7 @@ void Warcraft::prepare(State* state) {
 
     printf("Creating map\n");
 
-    map = new Map(
+    world = new World(
         new Image(renderer, "assets/war2/sprites/winter.png"),
         32, 32,
         WIDTH, HEIGHT, 3,
@@ -181,20 +181,20 @@ void Warcraft::prepare(State* state) {
     sprites[SPRITE_CRITTER] = (new Sprite(new Image(renderer, "assets/war2/sprites/critter.png"),
     32,
     32))
-    ->addClip(UP, 1, 1, 1, false, false)
-    ->addClip(UP+RIGHT, 2, 1, 1, false, false)
-    ->addClip(UP+LEFT, 2, 1, 1, true, false)
-    ->addClip(RIGHT, 3, 1, 1, false, false)
-    ->addClip(LEFT, 3, 1, 1, true, false)
-    ->addClip(RIGHT+DOWN, 4, 1, 1, false, false)
-    ->addClip(LEFT+DOWN, 4, 1, 1, true, false)
-    ->addClip(DOWN, 5, 1, 1, false, false);
+    ->addClip(UP, 0, 0, 1, false, false)
+    ->addClip(UP+RIGHT, 1, 0, 1, false, false)
+    ->addClip(UP+LEFT, 1, 0, 1, true, false)
+    ->addClip(RIGHT, 2, 0, 1, false, false)
+    ->addClip(LEFT, 2, 0, 1, true, false)
+    ->addClip(RIGHT+DOWN, 3, 0, 1, false, false)
+    ->addClip(LEFT+DOWN, 3, 0, 1, true, false)
+    ->addClip(DOWN, 4, 0, 1, false, false);
 
     printf("Creating farms\n");
     for (int x=1000; x<10*128; x+=128) {
         for (int y=128; y<10*128; y+=128) {
             Farm* farm = new Farm(sprites[SPRITE_HUMAN_MACDONALDS]);
-            farm->setMap(map);
+            farm->setWorld(world);
             if (farm->canPlace(x-20, y-20, 64+20, 64+20)) {
                 farm->setPosition(x, y);
                 addObject(farm);
@@ -229,7 +229,7 @@ void Warcraft::prepare(State* state) {
     for (int x=0; x<1*32; x+=32) {
         for (int y=10; y<1*32; y+=32) {
             Footman* footman = new Footman(sprites[SPRITE_FOOTMAN_RED], fontSmall);
-            footman->setMap(map);
+            footman->setWorld(world);
             if (footman->canPlace(x, y, 32, 32)) {
                 footman->setPosition(x, y);
                 addObject(footman, footman->getId());
@@ -251,7 +251,7 @@ void Warcraft::prepare(State* state) {
                 int treeType = (rand() % 100 < 60) ? SPRITE_TREE1 : SPRITE_TREE2; // Mix them
     
                 Tree* tree = new Tree(sprites[treeType]);
-                tree->setMap(map);
+                tree->setWorld(world);
                 int treeX = x + offsetX;
                 int treeY = y + offsetY;
     

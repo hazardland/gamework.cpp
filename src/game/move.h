@@ -11,8 +11,8 @@ public:
     Move(Unit* unit, float travelX, float travelY);
     ~Move();
 
-    bool update(State* state) override;
-    void render(State* state) override;
+    bool update(Context* context) override;
+    void render(Context* context) override;
     std::vector<Job*> finish() override;
 
     bool isUnique() const override { return true; }
@@ -24,3 +24,4 @@ private:
 };
 
 #endif // GAME_MOVE_H
+

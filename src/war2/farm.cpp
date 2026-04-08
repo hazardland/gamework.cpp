@@ -7,7 +7,7 @@ Farm::Farm(Sprite* sprite) {
     setSize(96, 96);
     allowTerrain(2);
     setColor ({255, 0, 0, 255});
-    renderPosition = createChildPosition(0, 0, 96, 96);
+    renderPosition = relativePosition(0, 0, 96, 96);
     body = sprite;
 }
 

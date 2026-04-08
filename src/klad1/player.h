@@ -5,17 +5,16 @@
 
 class Animation;
 class Sprite;
-class State;
-class Text;
+class Context;
 typedef struct TTF_Font TTF_Font;
 
 class Player : public Unit {
 public:
-    Player(Sprite* sprite, TTF_Font* font);
+    Player(Sprite* sprite, float x, float y);
 
-    void update(State* state) override;
-    void render(State* state) override;
-    bool shouldCollide(Unit* target) const override;
+    void update(Context* context) override;
+    void render(Context* context) override;
+    bool canCrossUnit(Unit* target) const override;
 
     ~Player();
 
@@ -26,14 +25,15 @@ private:
     static constexpr int RUN_RIGHT = 4;
     
     Animation* body = nullptr;
-    Text* debug = nullptr;
-    
-    bool bridgeWalkable = false;
     float falling = 0;
+    bool inLadder = false;
+    bool aboveLadder = false;
+    float nearBridge = 0;
+    float nearLadder = 0;
+    bool foundBridge = false;
+    bool wrongBridge = false;
 
-    bool insideLadder();
-    bool insideBridge();
-    bool isHalfBridge();
+    void scan();
 };
 
 #endif // KLAD1_PLAYER_H

@@ -4,7 +4,7 @@
 #include "game/scene.h"
 #include "game/text.h"
 #include "game/fps.h"
-#include "game/map.h"
+#include "game/world.h"
 #include "game/minimap.h"
 #include "game/select.h"
 #include "game/window.h"

@@ -108,3 +108,5 @@ public:
         return static_cast<uint16_t>(buffer[1]) | (static_cast<uint16_t>(buffer[2]) << 8);
     }
 };
+
+

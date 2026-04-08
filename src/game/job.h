@@ -3,14 +3,14 @@
 
 #include <vector>
 
-class State;
+class Context;
 
 class Job {
 public:
     virtual ~Job() {}
     
-    virtual bool update(State* state) = 0;
-    virtual void render(State* state) {};
+    virtual bool update(Context* context) = 0;
+    virtual void render(Context* context) {};
     virtual std::vector<Job*> finish() { return {}; }
 
     virtual bool isUnique() const { return false; }
@@ -21,3 +21,4 @@ public:
 };
 
 #endif // GAME_JOB_H
+

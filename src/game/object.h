@@ -4,7 +4,7 @@
 #include <vector>
 #include <SDL3_image/SDL_image.h>
 
-class State;
+class Context;
 class Position;
 class Scene;
 
@@ -30,11 +30,7 @@ class Object {
     public:
         static uint32_t count;    // Keep count of total objects
         Object();  // Declare constructor
-        // Object(Position* position);  // Declare constructor
-        // Setter and getter methods
-        void setId();
         uint32_t getId();
-        bool hasId();
         virtual void addPosition(float x, float y);
         virtual void setPosition(float x, float y);
         virtual void setSize(float width, float height);
@@ -46,14 +42,20 @@ class Object {
         virtual float getY();
         virtual float getHeight();
         virtual float getWidth();
+        virtual bool isReady();
         virtual SDL_FRect* getPosition();
-        virtual Position* createChildPosition(float x, float y, float width, float height);
-        virtual Position* createChildPosition(float x, float y);
+        virtual bool intersects(SDL_FRect* target, float right = 0, float top = 0, float left = 0, float bottom = 0);
+        virtual bool intersects(Position* target, float right = 0, float top = 0, float left = 0, float bottom = 0);
+        virtual bool intersects(Object* target, float right = 0, float top = 0, float left = 0, float bottom = 0);
+        virtual Position* relativePosition(float x, float y, float width, float height);
+        virtual Position* relativePosition(float x, float y);
         void updateChildPositions();
-        virtual bool isVisible(State* state);
-        virtual void update(State* state);
-        virtual void render(State* state);
+        virtual bool isVisible(Context* context);
+        virtual void update(Context* context);
+        virtual void render(Context* context);
         virtual ~Object();
 };
 
 #endif // GAME_OBJECT
+
+

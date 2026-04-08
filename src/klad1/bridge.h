@@ -5,23 +5,22 @@
 
 class Animation;
 class Sprite;
-class State;
+class Context;
 
 class Bridge : public Unit {
 public:
-    Bridge(Sprite* sprite);
+    Bridge(Sprite* sprite, float x, float y);
 
-    void update(State* state) override;
-    void render(State* state) override;
-    int getKind() const override;
+    void update(Context* context) override;
+    void render(Context* context) override;
+    int getType() const override;
 
     ~Bridge();
 
 private:
-    static constexpr int WIDTH = 32;
-    static constexpr int HEIGHT = 1;
-
     Animation* body = nullptr;
 };
 
 #endif // KLAD1_BRIDGE_H
+
+

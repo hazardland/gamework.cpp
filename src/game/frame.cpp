@@ -26,3 +26,5 @@ void Frame::cacheFlip(){
 SDL_FRect* Frame::getRect(){
     return &rect;
 }
+
+

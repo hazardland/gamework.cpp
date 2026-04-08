@@ -16,10 +16,10 @@ Critter::Critter(Sprite* sprite, TTF_Font* font) {
     setLayer(1);
     setSize(32, 32);
     allowTerrains({1,2});
-    renderPosition = createChildPosition(0, 0, 32, 32);
+    renderPosition = relativePosition(0, 0, 32, 32);
     body = new Animation(sprite, DOWN);
     setColor ({165, 42, 42});
-    debug = new Text(font, createChildPosition(-10, -40));
+    debug = new Text(font, relativePosition(-10, -40));
     speed = 5;
 
     // travelX = (std::rand() % 51) - 25; // -25 to 25

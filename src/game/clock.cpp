@@ -6,3 +6,5 @@ void Clock::tick() {
     previousTicks = ticks;
     fps = (delta > 0) ? 1000.0f / delta : 0.0f;
 }
+
+

@@ -5,21 +5,22 @@
 
 class Animation;
 class Sprite;
-class State;
+class Context;
 
 class Ladder : public Unit {
 public:
-    Ladder(Sprite* sprite);
+    Ladder(Sprite* sprite, float x, float y);
 
-    void update(State* state) override;
-    void render(State* state) override;
+    void update(Context* context) override;
+    void render(Context* context) override;
+    int getType() const override;
 
     ~Ladder();
 
 private:
-    static constexpr int WIDTH = 32;
-    static constexpr int HEIGHT = 22;
     Animation* body = nullptr;
 };
 
 #endif // KLAD1_LADDER_H
+
+

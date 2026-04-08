@@ -48,15 +48,28 @@ Sprite* Sprite::addClip(int clipId,
 }
 
 Clip* Sprite::getClip(int clipId) {
-    return clips[clipId];
+    auto clip = clips.find(clipId);
+    if (clip == clips.end()) {
+        return nullptr;
+    }
+    return clip->second;
 }
 
 // getRect method
 SDL_FRect* Sprite::getRect(int clipId, int frameIndex) {
-    return getClip(clipId)->getFrame(frameIndex)->getRect();
+    Clip* clip = getClip(clipId);
+    if (clip == nullptr) {
+        return nullptr;
+    }
+    return clip->getFrame(frameIndex)->getRect();
 }
 
 // Destructor
 Sprite::~Sprite() {
+    for (auto& [clipId, clip] : clips) {
+        delete clip;
+    }
     delete image;
 }
+
+

@@ -22,7 +22,7 @@ endif
 # Build directories
 BUILD_DIR := build
 
-GAME_SRC := $(wildcard src/game/*.cpp)
+GAME_SRC := $(filter-out src/game/minimap.cpp src/game/terrain.cpp,$(wildcard src/game/*.cpp))
 WAR2_SRC := war2_main.cpp $(GAME_SRC) $(wildcard src/war2/*.cpp)
 KLAD1_GAME_SRC := $(filter-out src/klad1/tilemap.cpp,$(wildcard src/klad1/*.cpp))
 KLAD1_LEVEL_SRC := $(wildcard src/klad1/levels/*.cpp)

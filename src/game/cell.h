@@ -7,12 +7,11 @@
 #include <SDL3_image/SDL_image.h>
 
 class Unit;
-class Terrain;
 
 class Cell {
     public:
         int tile;
-        Terrain* terrain;
+        int type;
         SDL_FRect* rect;
 
         std::vector<std::list<Unit*>> units;
@@ -21,3 +20,5 @@ class Cell {
 };
 
 #endif
+
+

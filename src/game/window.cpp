@@ -1,24 +1,17 @@
-// File: window.cpp
-
 #include <iostream>
-// #include <SDL3/SDL.h>
 
 #include "game/window.h"
 
-
 #include "game/scene.h"
-#include "game/state.h"
-#include "game/state.h"
+#include "game/context.h"
 #include "game/input.h"
 #include "game/clock.h"
 #include "game/camera.h"
 #include "game/screen.h"
 
-bool SDL_STARTED = false;  // Define the global variable here.
+bool SDL_STARTED = false;
 
-Window::Window(const char* title, const int width, const int height, State* state) {
-
-    // printf("Starting");
+Window::Window(const char* title, int width, int height, Context* context) {
     if (!SDL_STARTED) {
         if(!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS)){
             std::cout << "Failed to SDL: " << SDL_GetError() << std::endl;
@@ -29,49 +22,38 @@ Window::Window(const char* title, const int width, const int height, State* stat
         SDL_STARTED = true;
     }
 
-    std::cout << "Window size " << width << "x" << height << "\n";
-
-    window = SDL_CreateWindow(title, width, height, SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY); // 
+    window = SDL_CreateWindow(title, width, height, SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY);
 
     if(!window){
         std::cout << "Failed to create window: " << SDL_GetError() << std::endl;
     }
 
-    if (state) {
-        this->state = state;
+    if (context) {
+        this->context = context;
     } else {
-        std::cout << "Creating state\n";
-        this->state = new State();
+        this->context = new Context();
     }
-    this->state->input->setWindow(this);
-    SDL_GetWindowSize(window, &this->state->screen->width, &this->state->screen->height);
-    // SDL_GetWindowSize(window, &this->state->camera->width, &this->state->camera->height);
-    this->state->camera->setSize(this->state->screen->width, this->state->screen->height);
+
+    this->context->input->setWindow(this);
+    SDL_GetWindowSize(window, &this->context->screen->width, &this->context->screen->height);
+    this->context->camera->setSize(this->context->screen->width, this->context->screen->height);
 
     fullscreenCooldown = new Cooldown(200);
 }
 
 void Window::setScene(Scene* scene) {
-    std::cout << "Setting scene renderer to state\n";
-    state->renderer = scene->renderer;
-    std::cout << "Setting scene to window\n";
+    context->renderer = scene->renderer;
     this->scene = scene;
-    std::cout << "Resizing window to scene size\n";
     SDL_GetWindowSize(window, &scene->width, &scene->height);
-    SDL_GetWindowSize(window, &this->state->screen->width, &this->state->screen->height);
-    // SDL_GetWindowSize(window, &this->state->camera->width, &this->state->camera->height);
-    this->state->camera->setSize(this->state->screen->width, this->state->screen->height);
+    SDL_GetWindowSize(window, &this->context->screen->width, &this->context->screen->height);
+    this->context->camera->setSize(this->context->screen->width, this->context->screen->height);
 }
 
 void Window::onResize(int width, int height) {
     scene->width = width;
     scene->height = height;
-    // state->camera->setWidth(width);
-    // state->camera->setHeight(height);
-    state->camera->setSize(width, height);
-    state->screen->setSize(width, height);
-    printf("Screen resize %ix%i\n", width, height);
-
+    context->camera->setSize(width, height);
+    context->screen->setSize(width, height);
 }
 
 bool Window::isFullscreen() {
@@ -87,24 +69,18 @@ void Window::toggleFullscreen() {
         if (!window) return;
 
         if (!fullscreen) {
-            printf("Going fullscreen\n");
-
-            // Backup original size before switching to fullscreen
             SDL_GetWindowSize(window, &originalWidth, &originalHeight);
 
             const SDL_DisplayMode* displayMode = SDL_GetCurrentDisplayMode(0);
-            if (displayMode != nullptr) { // Get current monitor resolution
-                SDL_SetWindowSize(window, displayMode->w, displayMode->h);  // Set window size to match screen
+            if (displayMode != nullptr) {
+                SDL_SetWindowSize(window, displayMode->w, displayMode->h);
             }
 
             SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
             fullscreen = true;
         } else {
-            printf("Going normal screen\n");
-
             SDL_SetWindowFullscreen(window, 0);
 
-            // Restore previous window size if available, otherwise use default 1280x720
             if (originalWidth > 0 && originalHeight > 0) {
                 SDL_SetWindowSize(window, originalWidth, originalHeight);
             } else {
@@ -114,9 +90,8 @@ void Window::toggleFullscreen() {
             fullscreen = false;
         }
 
-        // Update state dimensions after toggling fullscreen
-        SDL_GetWindowSize(window, &this->state->screen->width, &this->state->screen->height);
-        this->state->camera->setSize(this->state->screen->width, this->state->screen->height);
+        SDL_GetWindowSize(window, &this->context->screen->width, &this->context->screen->height);
+        this->context->camera->setSize(this->context->screen->width, this->context->screen->height);
 
         fullscreenCooldown->reset();
     }
@@ -124,33 +99,21 @@ void Window::toggleFullscreen() {
 
 
 int Window::run() {
-    scene->prepare(state);
+    scene->prepare(context);
 
-    bool running = true;
-
-    while (!state->input->close) {
-        static bool first = true;
-        if (first) {
-            printf("Window loop: tick\n");
-        }
-        state->clock->tick();
-        if (first) {
-            printf("Window loop: fetch\n");
-        }
-        state->input->fetch();
-        if (first) {
-            printf("Window loop: update\n");
-        }
-        scene->update(state);
-        if (first) {
-            printf("Window loop: render\n");
-        }
-        scene->render(state);
-        if (first) {
-            printf("Window loop: first frame done\n");
-            first = false;
-        }
+    while (!context->input->close) {
+        context->clock->tick();
+        context->input->poll();
+        scene->update(context);
+        scene->render(context);
     }
 
     return 0;
 }
+
+Window::~Window() {
+    delete fullscreenCooldown;
+}
+
+
+

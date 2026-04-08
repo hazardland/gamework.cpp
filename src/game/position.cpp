@@ -89,6 +89,49 @@ SDL_FRect* Position::getPosition() {
     return &rect;
 }
 
+bool Position::intersects(SDL_FRect* target, float right, float top, float left, float bottom) {
+    if (target == nullptr) {
+        return false;
+    }
+
+    SDL_FRect* source = getPosition();
+
+    float probeLeft = source->x - left;
+    float probeTop = source->y - top;
+    float probeRight = source->x + source->w + right;
+    float probeBottom = source->y + source->h + bottom;
+
+    return
+        probeLeft < target->x + target->w &&
+        probeRight > target->x &&
+        probeTop < target->y + target->h &&
+        probeBottom > target->y;
+}
+
+bool Position::intersects(Position* target, float right, float top, float left, float bottom) {
+    if (target == nullptr) {
+        return false;
+    }
+
+    return intersects(target->getPosition(), right, top, left, bottom);
+}
+
+float* Position::getXPtr() {
+    return &rect.x;
+}
+
+float* Position::getYPtr() {
+    return &rect.y;
+}
+
+float* Position::getWidthPtr() {
+    return &rect.w;
+}
+
+float* Position::getHeightPtr() {
+    return &rect.h;
+}
+
 void Position::addPosition(float x, float y) {
     if (parentX!=nullptr) {
         this->x += x;
@@ -198,14 +241,8 @@ void Position::setRequiresUpdate() {
     needsUpdate = true;
 }
 
-void Position::draw(State* state) {
-    if (color.a > 0){
-        SDL_SetRenderDrawColor(state->renderer, color.r, color.g, color.b, color.a);
-        SDL_RenderRect(state->renderer, state->camera->translate(getPosition()));
-        SDL_SetRenderDrawColor(state->renderer, 0, 0, 0, 0);
-    }
-}
-
 bool Position::isReady() {
     return ready;
 }
+
+

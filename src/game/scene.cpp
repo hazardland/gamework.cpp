@@ -5,10 +5,11 @@
 
 #include "game/scene.h"
 
+#include "game/fps.h"
+#include "game/debug.h"
 #include "game/object.h"
-#include "game/state.h"
-#include "game/map.h"
-#include "game/minimap.h"
+#include "game/world.h"
+#include "game/context.h"
 #include "game/window.h"
 
 Scene::Scene(Window* window, int width, int height) {
@@ -51,11 +52,12 @@ void Scene::setSize(int width, int height) {
     this->height = height;
 }
 
-void Scene::prepare(State* state) {
+void Scene::prepare(Context* context) {
     // Empty in base class, can be overridden by derived classes
 }
 
-void Scene::update(State* state) {
+void Scene::update(Context* context) {
+    debug(context, debugFont);
 
     if (client!=nullptr) {
         for (int i = 0; i < 10; ++i) {
@@ -63,29 +65,25 @@ void Scene::update(State* state) {
         }    
     }
 
-    if (map!=nullptr) {
-        map->update(state);
+    if (world!=nullptr) {
+        world->update(context);
     }
     visibleObjects.clear();
     for (Object* object : objects)
     {
-        object->update(state);
-        if (object->isVisible(state)) {
+        object->update(context);
+        if (object->isVisible(context)) {
             visibleObjects.push_back(object);
         }
     }
-    if (minimap!=nullptr) {
-        minimap->update(state);
-    }
-
     if (client!=nullptr) {
         client->flush();
     }
 }
 
-void Scene::render(State* state) {
+void Scene::render(Context* context) {
     clear();
-    build(state);
+    build(context);
     present();
 }
 
@@ -93,13 +91,13 @@ void Scene::clear() {
     SDL_RenderClear(renderer);
 }
 
-void Scene::build(State* state) {
-    if (map!=nullptr) {
-       map->render(state);
+void Scene::build(Context* context) {
+    if (world!=nullptr) {
+       world->render(context);
     }
     for (Object* object : visibleObjects)
     {
-        object->render(state);
+        object->render(context);
     }
 
     // int tileSize = 8;
@@ -129,9 +127,6 @@ void Scene::build(State* state) {
     //     }
     // }
     
-    if (minimap!=nullptr){
-        minimap->render(state);
-    }
 }
 
 void Scene::present(int delay) {
@@ -147,6 +142,20 @@ void Scene::addObject(Object* obj) {
 void Scene::addObject(Object* obj, uint32_t id) {
     objects.push_back(obj);
     objectById[id] = obj;
+}
+
+void Scene::addFps(TTF_Font* font) {
+    if (fps != nullptr) {
+        return;
+    }
+
+    fps = new Fps(font, "", 5, 5);
+    fps->setColor({0, 255, 255, 255});
+    addObject(fps);
+}
+
+void Scene::setDebugFont(TTF_Font* font) {
+    debugFont = font;
 }
 
 Object* Scene::getObject(int id) {
@@ -184,3 +193,6 @@ void Scene::removeObject(int id) {
 Scene::~Scene() {
     SDL_DestroyRenderer(renderer);
 }
+
+
+

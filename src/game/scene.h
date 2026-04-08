@@ -8,21 +8,22 @@
 #include <vector>
 
 #include <SDL3/SDL.h>
+#include <SDL3_ttf/SDL_ttf.h>
 
 #include "game/client.h"
 
+class Fps;
 class Object;
-class Minimap;
-class Map;
+class World;
 class Sprite;
-class State;
+class Context;
 class Window;
 
 /**
  * @brief The Scene class is responsible for managing and rendering objects, sprites,
  * and other visual elements within the game's scenes. It contains a list of visible objects,
  * details about the scene's dimensions, the window and renderer context, and a map and
- * minimap for navigational purposes.
+ * visual elements within the game's scenes.
  */
 class Scene {
     // A list of objects that are currently visible in the scene
@@ -42,15 +43,9 @@ public:
     SDL_Renderer *renderer;
     // SDL_Window* window;
 
-    // Map of sprite ID to Sprite object
     std::map<int, Sprite*> sprites;
 
-
-    // Pointer to a Map object, which represents the game's world map
-    Map* map;
-
-    // Pointer to a Minimap object, which provides a simplified overview of the game's world map
-    Minimap* minimap = nullptr;
+    World* world = nullptr;
 
     /**
      * @brief Constructor that initializes the Scene object
@@ -72,21 +67,21 @@ public:
     /**
      * @brief Virtual function to prepare the Scene
      */
-    virtual void prepare(State* state);
+    virtual void prepare(Context* context);
 
     /**
      * @brief Updates the state of the Scene
      *
      * @param state A State object that represents the current state of the game
      */
-    virtual void update(State* state);
+    virtual void update(Context* context);
 
     /**
      * @brief Renders the Scene
      *
      * @param state A State object that represents the current state of the game
      */
-    virtual void render(State* state);
+    virtual void render(Context* context);
 
     /**
      * @brief Clears the Scene
@@ -98,7 +93,7 @@ public:
      *
      * @param state A State object that represents the current state of the game
      */
-    virtual void build(State* state);
+    virtual void build(Context* context);
 
     /**
      * @brief Presents the Scene
@@ -130,14 +125,14 @@ public:
     Object* getObject(int id);
 
     /**
-     * @brief Removes object from all places, Note if it is also Unit you should remove it from map by yourself
+     * @brief Removes object from all places, Note if it is also Unit you should remove it from world by yourself
      *
      * @param obj An Object pointer representing the object to be added to the Scene
      */
     void removeObject(Object* obj);
     
     /**
-     * @brief Removes object from all places, Note if it is also Unit you should remove it from map by yourself
+     * @brief Removes object from all places, Note if it is also Unit you should remove it from world by yourself
      *
      * @param id An Object pointer representing the object to be added to the Scene
      */
@@ -151,6 +146,16 @@ public:
 
 protected:
     Client* client = nullptr;
+    Fps* fps = nullptr;
+
+public:
+    void addFps(TTF_Font* font);
+    void setDebugFont(TTF_Font* font);
+
+protected:
+    TTF_Font* debugFont = nullptr;
 };
 
 #endif // GAME_SCENE_H
+
+

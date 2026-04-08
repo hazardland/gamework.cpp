@@ -9,8 +9,8 @@
  */
 class Mouse {
     public:
-        float x;  ///< Mouse X position
-        float y;  ///< Mouse Y position
+        float x = 0;
+        float y = 0;
         bool rightDragActive = false;  ///< Boolean representing if right drag is active.
         bool rightDragEnded = false;  ///< Boolean representing if right drag has ended.
         int rightDragStartX = -1;  ///< X position where right drag started.
@@ -21,8 +21,13 @@ class Mouse {
         int leftDragStartX = -1;  ///< X position where left drag started.
         int leftDragStartY = -1;  ///< Y position where left drag started.
         bool leftClick = false;  ///< Boolean representing if left click is active.
-        void reset();  ///< Resets the state of the mouse.
+        void reset();
+        void move(float x, float y);
+        void down(int button);
+        void up(int button);
         bool inside(SDL_FRect* position);  ///< Checks if the mouse is inside a certain area defined by a SDL_FRect.
     };
 
 #endif
+
+

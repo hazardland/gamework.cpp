@@ -13,3 +13,5 @@ bool Cooldown::isReady() {
 void Cooldown::reset() {
     lastActionTime = std::chrono::steady_clock::now();
 }
+
+

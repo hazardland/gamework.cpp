@@ -14,8 +14,8 @@ Footman::Footman(Sprite* sprite, TTF_Font* font) {
     speed = 50;
     body = new Animation(sprite, action + faceX + faceY);
     body->pause = 0;
-    renderPosition = createChildPosition(-24, -24, 72, 72);
-    text = new Text(font, createChildPosition(-10, -40));
+    renderPosition = relativePosition(-24, -24, 72, 72);
+    text = new Text(font, relativePosition(-10, -40));
 
     setColor ({255, 255, 0, 255});
     // setMinimapColor ({255, 255, 0, 255});
