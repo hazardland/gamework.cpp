@@ -68,6 +68,7 @@ private:
     //virtual void renderHitbox(Context* context);
 
     // World cell methods
+    void removeFromGrid();
     void updateGrid();
     bool canPlace(float newX, float newY, float newWidth, float newHeight);
     bool canMove(float dx, float dy);

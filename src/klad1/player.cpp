@@ -76,52 +76,64 @@ void Player::scan() {
 void Player::update(Context* context) {
     scan();
 
-    if (!inLadder && !aboveLadder && canMove(0, 1)) {
+    Keyboard* key = context->input->keyboard;
+    bool fallingNow = !inLadder && !aboveLadder && canMove(0, 1);
+    bool showShoot = shootCooldown.isActive() || (key->space && !fallingNow);
+
+    if (fallingNow) {
         float deltaX = 0;
         float deltaY = 0;
         move(context->clock->delta, 0, 1, deltaX, deltaY);
         falling += deltaY;
-        body->play(IDLE);
+        if (showShoot) {
+            body->play(facingRight ? SHOOT_RIGHT : SHOOT_LEFT);
+        } else {
+            body->play(IDLE);
+        }
         body->update(context->clock->delta);
         return;
     }
 
     falling = 0;
 
-    Keyboard* key = context->input->keyboard;
-
     float moveX = 0;
     float moveY = 0;
 
-    if (inLadder) { // && !aboveLadder
-        if (key->w || key->up) {
-            moveY = -1;
-        } 
-    }
-
-    if (key->s || key->down) {
-        moveY = 1;
-    }
-
-    if (key->a || key->left) {
-        moveX = -1;
-        if (nearBridge!=0 && nearBridge<1 && nearBridge>-5){
-            moveY = -1;
+    if (!showShoot) {
+        if (inLadder) { // && !aboveLadder
+            if (key->w || key->up) {
+                moveY = -1;
+            } 
         }
-    } else if (key->d || key->right) {
-        moveX = 1;
-        if (nearBridge!=0 && nearBridge<1 && nearBridge>-5){
-            moveY = -1;
+
+        if (key->s || key->down) {
+            moveY = 1;
+        }
+
+        if (key->a || key->left) {
+            moveX = -1;
+            facingRight = false;
+            if (nearBridge!=0 && nearBridge<1 && nearBridge>-5){
+                moveY = -1;
+            }
+        } else if (key->d || key->right) {
+            moveX = 1;
+            facingRight = true;
+            if (nearBridge!=0 && nearBridge<1 && nearBridge>-5){
+                moveY = -1;
+            }
         }
     }
 
-    if (moveX != 0 || moveY != 0) {
+    if (!showShoot && (moveX != 0 || moveY != 0)) {
         float deltaX = 0;
         float deltaY = 0;
         move(context->clock->delta, moveX, moveY, deltaX, deltaY);
     }
 
-    if (moveY != 0 && inLadder) {
+    if (showShoot) {
+        body->play(facingRight ? SHOOT_RIGHT : SHOOT_LEFT);
+    } else if (moveY != 0 && inLadder) {
         body->play(CLIMB);
     } else if (moveX < 0) {
         body->play(RUN_LEFT);
@@ -136,16 +148,16 @@ void Player::update(Context* context) {
 
 void Player::render(Context* context) {
     if (context->camera->isVisible(getRenderPosition())) {
-        draw(getPosition());
-        print(
-            getPosition(),
+        // draw(getPosition());
+        // print(
+            // getPosition(),
             // "IL", inLadder,
             // "AL", aboveLadder,
             // "FB", foundBridge,
-            "NB", nearBridge
+            // "NB", nearBridge
             // "NL", nearLadder
             // "F", static_cast<int>(falling)
-        );
+        // );
         body->render(context->camera->translate(getRenderPosition()));
     }
 }
@@ -160,9 +172,47 @@ bool Player::canCrossUnit(Unit* target) const {
             if (falling>3 || nearBridge<=-5 || wrongBridge)
                 return true;
             break;
+
+        case UNIT_BULLET:
+            return true;
     }
 
     return Unit::canCrossUnit(target);
+}
+
+void Player::respawn(float x, float y) {
+    falling = 0;
+    inLadder = false;
+    aboveLadder = false;
+    nearBridge = 0;
+    nearLadder = 0;
+    foundBridge = false;
+    wrongBridge = false;
+    setPosition(x, y);
+    body->play(IDLE);
+}
+
+bool Player::isFalling() const {
+    return falling > 0;
+}
+
+void Player::shoot() {
+    shootCooldown.reset();
+    body->play(facingRight ? SHOOT_RIGHT : SHOOT_LEFT);
+}
+
+bool Player::isFacingRight() const {
+    return facingRight;
+}
+
+float Player::getBulletX() const {
+    SDL_FRect* render = renderPosition->getPosition();
+    return facingRight ? render->x + render->w - 6.0f : render->x - 2.0f;
+}
+
+float Player::getBulletY() const {
+    SDL_FRect* render = renderPosition->getPosition();
+    return render->y + 10.0f;
 }
 
 Player::~Player() {

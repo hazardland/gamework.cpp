@@ -164,14 +164,17 @@ Object* Scene::getObject(int id) {
 }
 
 void Scene::removeObject(Object* obj) {
-    // Remove from map
     int id = obj->getId();
     objectById.erase(id);
 
-    // Remove from vector (stable erase, order preserved)
     auto it = std::find(objects.begin(), objects.end(), obj);
     if (it != objects.end()) {
         objects.erase(it);
+    }
+
+    auto visibleIt = std::find(visibleObjects.begin(), visibleObjects.end(), obj);
+    if (visibleIt != visibleObjects.end()) {
+        visibleObjects.erase(visibleIt);
     }
 }
 
@@ -181,10 +184,14 @@ void Scene::removeObject(int id) {
         Object* obj = it->second;
         objectById.erase(it);
 
-        // Remove from vector
         auto vit = std::find(objects.begin(), objects.end(), obj);
         if (vit != objects.end()) {
             objects.erase(vit);
+        }
+
+        auto visibleIt = std::find(visibleObjects.begin(), visibleObjects.end(), obj);
+        if (visibleIt != visibleObjects.end()) {
+            visibleObjects.erase(visibleIt);
         }
     }
 }

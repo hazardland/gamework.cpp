@@ -1,5 +1,6 @@
 #include "klad1/brick.h"
 #include "klad1/type.h"
+#include "klad1/unit_type.h"
 
 #include "game/animation.h"
 #include "game/camera.h"
@@ -23,6 +24,10 @@ void Brick::render(Context* context) {
     if (context->camera->isVisible(getRenderPosition())) {
         body->render(context->camera->translate(getRenderPosition()));
     }
+}
+
+int Brick::getType() const {
+    return UNIT_BRICK;
 }
 
 Brick::~Brick() {

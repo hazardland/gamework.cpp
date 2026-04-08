@@ -4,5 +4,7 @@
 static constexpr int UNIT_DEFAULT = 0;
 static constexpr int UNIT_BRIDGE = 1;
 static constexpr int UNIT_LADDER = 2;
+static constexpr int UNIT_BRICK = 3;
+static constexpr int UNIT_BULLET = 4;
 
 #endif // KLAD1_UNIT_TYPE_H

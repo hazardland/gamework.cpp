@@ -10,6 +10,11 @@ bool Cooldown::isReady() {
     return (now - lastActionTime) > cooldownTime;
 }
 
+bool Cooldown::isActive() {
+    auto now = std::chrono::steady_clock::now();
+    return (now - lastActionTime) < cooldownTime;
+}
+
 void Cooldown::reset() {
     lastActionTime = std::chrono::steady_clock::now();
 }

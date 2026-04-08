@@ -13,6 +13,7 @@ public:
 
     void update(Context* context) override;
     void render(Context* context) override;
+    int getType() const override;
 
     ~Brick();
 

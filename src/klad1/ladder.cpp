@@ -13,9 +13,9 @@
 Ladder::Ladder(Sprite* sprite, float x, float y) {
     setLayer(Klad1::LAYER_WORLD);
     allowTile(TILE_BLANK);
-    setSize(18, 22);
-    setPosition(x+6, y);
-    renderPosition = relativePosition(-6, 0, 32, 22);
+    setSize(32, 22);
+    setPosition(x, y);
+    renderPosition = relativePosition(0, 0, 32, 22);
     body = new Animation(sprite, 1);
 }
 
@@ -25,7 +25,7 @@ void Ladder::update(Context* context) {
 
 void Ladder::render(Context* context) {
     if (context->camera->isVisible(getRenderPosition())) {
-        draw(getPosition());
+        // draw(getPosition());
         body->render(context->camera->translate(getRenderPosition()));
     }
 }

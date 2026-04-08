@@ -33,6 +33,7 @@ public:
     void setTile(int x, int y, int tile);
     void setCell(int x, int y, int type, int tile);
     bool scanUnits(float x, float y, float width, float height, const std::function<bool(Unit*)>& fn, int layer = -1);
+    void removeObject(Unit* unit);
 
     ~World();
 };

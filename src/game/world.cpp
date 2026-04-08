@@ -160,6 +160,20 @@ bool World::scanUnits(float x, float y, float width, float height, const std::fu
     return true;
 }
 
+void World::removeObject(Unit* unit) {
+    if (unit == nullptr || !unit->gridSet) {
+        return;
+    }
+
+    for (int x = unit->gridFromX; x <= unit->gridToX; x++) {
+        for (int y = unit->gridFromY; y <= unit->gridToY; y++) {
+            grid[x][y]->units[unit->getLayer()].remove(unit);
+        }
+    }
+
+    unit->gridSet = false;
+}
+
 World::~World() {
     for (int x = 0; x < gridWidth; x++) {
         for (int y = 0; y < gridHeight; y++) {

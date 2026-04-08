@@ -16,7 +16,7 @@ Bridge::Bridge(Sprite* sprite, float x, float y) {
     setSize(32, 1);
     setPosition(x, y);
     body = new Animation(sprite, 1);
-    renderPosition = relativePosition(0, -2, 32, 22);
+    renderPosition = relativePosition(0, 0, 32, 22);
 }
 
 void Bridge::update(Context* context) {

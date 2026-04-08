@@ -242,6 +242,14 @@ void Unit::updateGrid() {
 
 }
 
+void Unit::removeFromGrid() {
+    if (world == nullptr || !gridSet) {
+        return;
+    }
+
+    world->removeObject(this);
+}
+
 int Unit::getLayer() {
     return layer;
 }
@@ -444,12 +452,10 @@ void Unit::resume() {
 }
 
 Unit::~Unit() {
+    removeFromGrid();
     for (Job* job : jobs) {
         delete job;
     }
-    delete renderPosition;
-    delete selectPosition;
 }
-
 
 
