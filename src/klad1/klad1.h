@@ -26,6 +26,9 @@ public:
     static constexpr int SPRITE_BRIDGE = 2;
     static constexpr int SPRITE_PLAYER = 3;
     static constexpr int SPRITE_LADDER = 4;
+    static constexpr int SPRITE_GOLD = 5;
+    static constexpr int SPRITE_DOOR = 6;
+    static constexpr int SPRITE_TIDE = 7;
 
     static constexpr int LAYER_BACKGROUND = 0;
     static constexpr int LAYER_WORLD = 1;

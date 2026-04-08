@@ -1,10 +1,13 @@
 #include "klad1/klad1.h"
 #include "klad1/bridge.h"
 #include "klad1/brick.h"
+#include "klad1/door.h"
+#include "klad1/gold.h"
 #include "klad1/ladder.h"
 #include "klad1/level.h"
 #include "klad1/levels/level1.h"
 #include "klad1/player.h"
+#include "klad1/tide.h"
 
 #include "game/camera.h"
 #include "game/clip.h"
@@ -36,6 +39,9 @@ void Klad1::prepare(Context* context) {
     sprites[SPRITE_BRICK] = (new Sprite(image, CELL_WIDTH, CELL_HEIGHT))->addClip(1, 8, 0, 1, false, false);
     sprites[SPRITE_BRIDGE] = (new Sprite(image, CELL_WIDTH, CELL_HEIGHT))->addClip(1, 7, 0, 1, false, false);
     sprites[SPRITE_LADDER] = (new Sprite(image, CELL_WIDTH, CELL_HEIGHT))->addClip(1, 6, 0, 1, false, false);
+    sprites[SPRITE_GOLD] = (new Sprite(image, CELL_WIDTH, CELL_HEIGHT))->addClip(1, 1, 0, 1, false, false);
+    sprites[SPRITE_DOOR] = (new Sprite(image, CELL_WIDTH, CELL_HEIGHT))->addClip(1, 2, 0, 1, false, false);
+    sprites[SPRITE_TIDE] = (new Sprite(image, CELL_WIDTH, CELL_HEIGHT))->addClip(1, 4, 0, 1, false, false);
     sprites[SPRITE_PLAYER] = (new Sprite(image, CELL_WIDTH, CELL_HEIGHT, 133))
         ->addClip(1, 24, 0, 1, false, false)
         ->addClip(2, 25, 0, 2, false, false)
@@ -54,6 +60,37 @@ void Klad1::prepare(Context* context) {
             world->setCell(x, y, TILE_BLANK, Level::BLANK);
 
             switch (value) {
+                case Level::GOLD: {
+                    Gold* gold = new Gold(
+                        sprites[SPRITE_GOLD],
+                        x * CELL_WIDTH,
+                        y * CELL_HEIGHT
+                    );
+                    addObject(gold);
+                    break;
+                }
+
+                case Level::EXIT:
+                case Level::DOOR: {
+                    Door* door = new Door(
+                        sprites[SPRITE_DOOR],
+                        x * CELL_WIDTH,
+                        y * CELL_HEIGHT
+                    );
+                    addObject(door);
+                    break;
+                }
+
+                case Level::TIDE: {
+                    Tide* tide = new Tide(
+                        sprites[SPRITE_TIDE],
+                        x * CELL_WIDTH,
+                        y * CELL_HEIGHT
+                    );
+                    addObject(tide);
+                    break;
+                }
+
                 case Level::WATER:
                     world->setCell(x, y, TILE_WATER, Level::WATER);
                     break;
