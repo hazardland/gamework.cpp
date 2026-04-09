@@ -12,6 +12,7 @@
 #include "game/scene.h"
 #include "game/sprite.h"
 #include "game/debug.h"
+#include "game/sound.h"
 
 #include <algorithm>
 
@@ -26,6 +27,7 @@ Bullet::Bullet(float x, float y, bool facingRight) {
 
 void Bullet::prepare() {
     body = new Animation(scene->sprites[Klad1::SPRITE_BULLET], direction > 0 ? 1 : 2);
+    hit = scene->sounds[Klad1::SOUND_HIT];
 }
 
 float Bullet::findWallHitX(float startFront, float endFront) {
@@ -76,6 +78,7 @@ void Bullet::update(Context* context) {
     Brick::HitSide hitSide = direction > 0 ? Brick::HitSide::Left : Brick::HitSide::Right;
 
     if (touchesTile(TILE_WALL)) {
+        hit->play(context);
         dying = true;
         return;
     }
@@ -102,6 +105,7 @@ void Bullet::update(Context* context) {
         if ((direction > 0 && frontX >= hitX) ||
             (direction < 0 && frontX <= hitX)) {
             overlappingBrick->hit(hitSide);
+            hit->play(context);
             dying = true;
             return;
         }
@@ -162,6 +166,7 @@ void Bullet::update(Context* context) {
 
     if (hitWall) {
         setX(direction > 0 ? wallHitX - getWidth() : wallHitX);
+        hit->play(context);
         dying = true;
         return;
     }
@@ -169,6 +174,7 @@ void Bullet::update(Context* context) {
     if (hitBrickNow) {
         setX(direction > 0 ? brickHitX - getWidth() : brickHitX);
         hitBrick->hit(hitSide);
+        hit->play(context);
         dying = true;
         return;
     }

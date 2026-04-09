@@ -153,24 +153,27 @@ void Player::update(Context* context) {
     if (showShoot) {
         body->play(facingRight ? SHOOT_RIGHT : SHOOT_LEFT);
     } else if (moveY != 0 && inLadder) {
-        body->play(CLIMB);
+        body->play(CLIMB, 1.15f);
     } else if (moveX < 0) {
-        body->play(RUN_LEFT);
+        body->play(RUN_LEFT, 1.15f);
     } else if (moveX > 0) {
-        body->play(RUN_RIGHT);
+        body->play(RUN_RIGHT, 1.15f);
     } else {
         body->play(IDLE);
     }
 
     body->update(context->clock->delta);
 
-    if (!playedStep &&
-        (body->activeClip == RUN_LEFT || body->activeClip == RUN_RIGHT || body->activeClip == CLIMB) &&
-        body->activeClip == previousClip &&
-        previousFrame != body->frame &&
-        body->frame == 0) {
-        if (step != nullptr) {
-            step->play(context);
+    if (!playedStep && body->activeClip == previousClip && previousFrame != body->frame) {
+        if ((body->activeClip == RUN_LEFT || body->activeClip == RUN_RIGHT) &&
+            (body->frame == 1 || body->frame == 3)) {
+            if (step != nullptr) {
+                step->play(context);
+            }
+        } else if (body->activeClip == CLIMB && body->frame == 0) {
+            if (step != nullptr) {
+                step->play(context);
+            }
         }
     }
 }

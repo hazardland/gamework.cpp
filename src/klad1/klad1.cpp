@@ -43,6 +43,11 @@ void Klad1::prepare(Context* context) {
     TTF_SetFontOutline(font, 1);
     setDebugFont(font);
     sounds[SOUND_STEP] = new Sound("assets/klad1/step.wav");
+    sounds[SOUND_GOLD] = new Sound("assets/klad1/gold.wav");
+    sounds[SOUND_KEY] = new Sound("assets/klad1/key.wav");
+    sounds[SOUND_FIRE] = new Sound("assets/klad1/fire.wav");
+    sounds[SOUND_HIT] = new Sound("assets/klad1/hit.wav");
+    sounds[SOUND_DOOR] = new Sound("assets/klad1/door.wav");
 
     world = new World(
         image,
@@ -199,6 +204,7 @@ void Klad1::update(Context* context) {
         bullets.push_back(bullet);
         bulletCooldown.reset();
         player->shoot();
+        sounds[SOUND_FIRE]->play(context);
     }
 
     for (Tide* tide : tides) {
@@ -236,11 +242,13 @@ void Klad1::update(Context* context) {
 
         gold->collect();
         goldCollected++;
+        sounds[SOUND_GOLD]->play(context);
 
         if (gold->getIndex() == keyGold && key == nullptr) {
             key = new Key(gold->getX(), gold->getY());
             addObject(key);
             spawnedKeyThisFrame = true;
+            sounds[SOUND_KEY]->play(context);
         }
     }
 
@@ -251,6 +259,7 @@ void Klad1::update(Context* context) {
     for (Door* door : doors) {
         if (door != nullptr && !door->isOpen() && player->intersects(door, 1, 1, 1, 1)) {
             door->open();
+            sounds[SOUND_DOOR]->play(context);
         }
     }
 
@@ -258,6 +267,7 @@ void Klad1::update(Context* context) {
         for (Gate* gate : gates) {
             if (gate != nullptr && !gate->isOpen() && player->intersects(gate, 1, 1, 1, 1)) {
                 gate->open();
+                sounds[SOUND_DOOR]->play(context);
             }
         }
     }

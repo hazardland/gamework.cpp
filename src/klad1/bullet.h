@@ -5,6 +5,7 @@
 
 class Animation;
 class Context;
+class Sound;
 
 class Bullet : public Unit {
 public:
@@ -19,6 +20,7 @@ public:
 
 private:
     Animation* body = nullptr;
+    Sound* hit = nullptr;
     bool dead = false;
     bool dying = false;
     float direction = 1.0f;

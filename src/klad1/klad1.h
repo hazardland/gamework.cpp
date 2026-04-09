@@ -55,6 +55,11 @@ public:
     static constexpr int SPRITE_BULLET = 9;
 
     static constexpr int SOUND_STEP = 1;
+    static constexpr int SOUND_GOLD = 2;
+    static constexpr int SOUND_KEY = 3;
+    static constexpr int SOUND_FIRE = 4;
+    static constexpr int SOUND_HIT = 5;
+    static constexpr int SOUND_DOOR = 6;
 
     static constexpr int LAYER_BACKGROUND = 0;
     static constexpr int LAYER_WORLD = 1;
