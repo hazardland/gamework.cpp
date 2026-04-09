@@ -7,14 +7,18 @@
 #include "game/camera.h"
 #include "game/clock.h"
 #include "game/context.h"
+#include "game/scene.h"
 #include "game/sprite.h"
 
-Door::Door(Sprite* sprite, float x, float y) {
+Door::Door(float x, float y) {
     setLayer(Klad1::LAYER_WORLD);
     allowTile(TILE_BLANK);
     setSize(32, 22);
     setPosition(x, y);
-    body = new Animation(sprite, 1);
+}
+
+void Door::prepare() {
+    body = new Animation(scene->sprites[Klad1::SPRITE_DOOR], 1);
 }
 
 void Door::update(Context* context) {

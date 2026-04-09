@@ -4,12 +4,11 @@
 #include "game/unit.h"
 
 class Animation;
-class Sprite;
 class Context;
 
 class Bullet : public Unit {
 public:
-    Bullet(Sprite* sprite, float x, float y, bool facingRight);
+    Bullet(float x, float y, bool facingRight);
 
     void update(Context* context) override;
     void render(Context* context) override;
@@ -25,6 +24,9 @@ private:
     float direction = 1.0f;
 
     float findWallHitX(float startFront, float endFront);
+
+protected:
+    void prepare() override;
 };
 
 #endif // KLAD1_BULLET_H

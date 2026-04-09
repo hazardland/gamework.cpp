@@ -8,6 +8,7 @@
 #include "game/fps.h"
 #include "game/debug.h"
 #include "game/object.h"
+#include "game/sound.h"
 #include "game/world.h"
 #include "game/context.h"
 #include "game/window.h"
@@ -136,12 +137,23 @@ void Scene::present(int delay) {
 }
 
 void Scene::addObject(Object* obj) {
+    obj->setScene(this);
     objects.push_back(obj);
 }
 
 void Scene::addObject(Object* obj, uint32_t id) {
+    obj->setScene(this);
     objects.push_back(obj);
     objectById[id] = obj;
+}
+
+void Scene::addSound(int id, Sound* sound) {
+    sounds[id] = sound;
+}
+
+Sound* Scene::getSound(int id) {
+    auto it = sounds.find(id);
+    return it != sounds.end() ? it->second : nullptr;
 }
 
 void Scene::addFps(TTF_Font* font) {

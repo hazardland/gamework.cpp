@@ -5,13 +5,13 @@
 #include "game/cooldown.h"
 
 class Animation;
-class Sprite;
 class Context;
+class Sound;
 typedef struct TTF_Font TTF_Font;
 
 class Player : public Unit {
 public:
-    Player(Sprite* sprite, float x, float y);
+    Player(float x, float y);
 
     void update(Context* context) override;
     void render(Context* context) override;
@@ -42,9 +42,14 @@ private:
     bool foundBridge = false;
     bool wrongBridge = false;
     bool facingRight = true;
+    bool wasFalling = false;
+    Sound* step = nullptr;
     Cooldown shootCooldown = Cooldown(120);
 
     void scan();
+
+protected:
+    void prepare() override;
 };
 
 #endif // KLAD1_PLAYER_H

@@ -1,4 +1,5 @@
 #include "klad1/player.h"
+#include "klad1/klad1.h"
 #include "klad1/brick.h"
 #include "klad1/type.h"
 #include "klad1/unit_type.h"
@@ -11,18 +12,24 @@
 #include "game/input.h"
 #include "game/world.h"
 #include "game/position.h"
+#include "game/scene.h"
+#include "game/sound.h"
 #include "game/sprite.h"
 #include "game/context.h"
 
 
-Player::Player(Sprite* sprite, float x, float y) {
+Player::Player(float x, float y) {
     setSize(19.8f, 13.84f);
     setLayer(1);
     allowTiles({TILE_BLANK});
     speed = 11.f;
     setPosition(x, y + 2.0f);
-    body = new Animation(sprite, IDLE);
     renderPosition = relativePosition(-5.94f, -6.95f, 31.68f, 21.78f);
+}
+
+void Player::prepare() {
+    body = new Animation(scene->sprites[Klad1::SPRITE_PLAYER], IDLE);
+    step = scene->sounds[Klad1::SOUND_STEP];
 }
 
 void Player::scan() {
@@ -80,12 +87,16 @@ void Player::update(Context* context) {
     Keyboard* key = context->input->keyboard;
     bool fallingNow = !inLadder && !aboveLadder && canMove(0, 1);
     bool showShoot = shootCooldown.isActive() || (key->space && !fallingNow);
+    int previousClip = body->activeClip;
+    int previousFrame = body->frame;
+    bool playedStep = false;
 
     if (fallingNow) {
         float deltaX = 0;
         float deltaY = 0;
         move(context->clock->delta, 0, 1, deltaX, deltaY);
         falling += deltaY;
+        wasFalling = true;
         if (showShoot) {
             body->play(facingRight ? SHOOT_RIGHT : SHOOT_LEFT);
         } else {
@@ -96,6 +107,13 @@ void Player::update(Context* context) {
     }
 
     falling = 0;
+    if (wasFalling) {
+        wasFalling = false;
+        if (step != nullptr) {
+            step->play(context);
+            playedStep = true;
+        }
+    }
 
     float moveX = 0;
     float moveY = 0;
@@ -145,6 +163,16 @@ void Player::update(Context* context) {
     }
 
     body->update(context->clock->delta);
+
+    if (!playedStep &&
+        (body->activeClip == RUN_LEFT || body->activeClip == RUN_RIGHT || body->activeClip == CLIMB) &&
+        body->activeClip == previousClip &&
+        previousFrame != body->frame &&
+        body->frame == 0) {
+        if (step != nullptr) {
+            step->play(context);
+        }
+    }
 }
 
 void Player::render(Context* context) {

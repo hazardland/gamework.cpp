@@ -9,6 +9,7 @@ class Clock;
 class Input;
 class Camera;
 class Screen;
+class Audio;
 
 class Context {
 public:
@@ -19,6 +20,7 @@ public:
     Input* input;
     Camera* camera;
     Screen* screen;
+    Audio* audio;
     Client* client = nullptr;
     SDL_Renderer* renderer = nullptr;
 };

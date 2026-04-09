@@ -3,6 +3,7 @@
 #include "game/window.h"
 
 #include "game/scene.h"
+#include "game/audio.h"
 #include "game/context.h"
 #include "game/input.h"
 #include "game/clock.h"
@@ -13,7 +14,7 @@ bool SDL_STARTED = false;
 
 Window::Window(const char* title, int width, int height, Context* context) {
     if (!SDL_STARTED) {
-        if(!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS)){
+        if(!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_AUDIO)){
             std::cout << "Failed to SDL: " << SDL_GetError() << std::endl;
         }
         if (!TTF_Init()) {
@@ -105,6 +106,7 @@ int Window::run() {
         context->clock->tick();
         context->input->poll();
         scene->update(context);
+        context->audio->update();
         scene->render(context);
     }
 

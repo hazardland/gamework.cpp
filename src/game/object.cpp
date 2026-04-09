@@ -18,6 +18,15 @@ uint32_t Object::getId() {
     return id;
 }
 
+void Object::setScene(Scene* scene) {
+    this->scene = scene;
+    prepare();
+}
+
+Scene* Object::getScene() {
+    return scene;
+}
+
 void Object::addPosition(float x, float y) {
     position->addPosition(x, y);
     updateChildPositions();
@@ -124,6 +133,9 @@ void Object::update(Context* context) {
 }
 
 void Object::render(Context* context) {
+}
+
+void Object::prepare() {
 }
 
 void Object::updateChildPositions() {

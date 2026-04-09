@@ -9,7 +9,7 @@ class Context;
 
 class Bridge : public Unit {
 public:
-    Bridge(Sprite* sprite, float x, float y);
+    Bridge(float x, float y);
 
     void update(Context* context) override;
     void render(Context* context) override;
@@ -19,6 +19,9 @@ public:
 
 private:
     Animation* body = nullptr;
+
+protected:
+    void prepare() override;
 };
 
 #endif // KLAD1_BRIDGE_H

@@ -26,11 +26,14 @@ class Object {
 
     protected:
         Position* position;   // Object's position and size
+        Scene* scene = nullptr;
 
     public:
         static uint32_t count;    // Keep count of total objects
         Object();  // Declare constructor
         uint32_t getId();
+        void setScene(Scene* scene);
+        Scene* getScene();
         virtual void addPosition(float x, float y);
         virtual void setPosition(float x, float y);
         virtual void setSize(float width, float height);
@@ -54,6 +57,9 @@ class Object {
         virtual void update(Context* context);
         virtual void render(Context* context);
         virtual ~Object();
+
+    protected:
+        virtual void prepare();
 };
 
 #endif // GAME_OBJECT

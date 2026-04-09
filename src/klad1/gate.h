@@ -4,12 +4,11 @@
 #include "game/unit.h"
 
 class Animation;
-class Sprite;
 class Context;
 
 class Gate : public Unit {
 public:
-    Gate(Sprite* sprite, float x, float y);
+    Gate(float x, float y);
 
     void update(Context* context) override;
     void render(Context* context) override;
@@ -23,6 +22,9 @@ public:
 private:
     Animation* body = nullptr;
     bool opened = false;
+
+protected:
+    void prepare() override;
 };
 
 #endif // KLAD1_GATE_H

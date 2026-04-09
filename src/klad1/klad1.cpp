@@ -17,6 +17,7 @@
 #include "game/frame.h"
 #include "game/image.h"
 #include "game/input.h"
+#include "game/sound.h"
 #include "game/world.h"
 #include "game/sprite.h"
 #include "game/context.h"
@@ -41,6 +42,7 @@ void Klad1::prepare(Context* context) {
     font = TTF_OpenFont("assets/war2/fonts/titillium.ttf", 12);
     TTF_SetFontOutline(font, 1);
     setDebugFont(font);
+    sounds[SOUND_STEP] = new Sound("assets/klad1/step.wav");
 
     world = new World(
         image,
@@ -101,23 +103,14 @@ void Klad1::prepare(Context* context) {
 
             switch (value) {
                 case Level::GOLD: {
-                    Gold* gold = new Gold(
-                        sprites[SPRITE_GOLD],
-                        x * CELL_WIDTH,
-                        y * CELL_HEIGHT,
-                        static_cast<int>(golds.size())
-                    );
+                    Gold* gold = new Gold(x * CELL_WIDTH, y * CELL_HEIGHT, static_cast<int>(golds.size()));
                     addObject(gold);
                     golds.push_back(gold);
                     break;
                 }
 
                 case Level::DOOR: {
-                    Door* door = new Door(
-                        sprites[SPRITE_DOOR],
-                        x * CELL_WIDTH,
-                        y * CELL_HEIGHT
-                    );
+                    Door* door = new Door(x * CELL_WIDTH, y * CELL_HEIGHT);
                     door->setWorld(world);
                     addObject(door);
                     doors.push_back(door);
@@ -125,11 +118,7 @@ void Klad1::prepare(Context* context) {
                 }
 
                 case Level::EXIT: {
-                    Gate* gate = new Gate(
-                        sprites[SPRITE_DOOR],
-                        x * CELL_WIDTH,
-                        y * CELL_HEIGHT
-                    );
+                    Gate* gate = new Gate(x * CELL_WIDTH, y * CELL_HEIGHT);
                     gate->setWorld(world);
                     addObject(gate);
                     gates.push_back(gate);
@@ -149,22 +138,14 @@ void Klad1::prepare(Context* context) {
                     break;
 
                 case Level::BRICK: {
-                    Brick* brick = new Brick(
-                        sprites[SPRITE_BRICK],
-                        x * CELL_WIDTH,
-                        y * CELL_HEIGHT
-                    );
+                    Brick* brick = new Brick(x * CELL_WIDTH, y * CELL_HEIGHT);
                     brick->setWorld(world);
                     addObject(brick);
                     break;
                 }
 
                 case Level::LADDER: {
-                    Ladder* ladder = new Ladder(
-                        sprites[SPRITE_LADDER],
-                        x * CELL_WIDTH,
-                        y * CELL_HEIGHT
-                    );
+                    Ladder* ladder = new Ladder(x * CELL_WIDTH, y * CELL_HEIGHT);
                     ladder->setWorld(world);
                     addObject(ladder);
                     break;
@@ -172,11 +153,7 @@ void Klad1::prepare(Context* context) {
 
                 case Level::BRIDGE:
                 {
-                    Bridge* bridge = new Bridge(
-                        sprites[SPRITE_BRIDGE],
-                        x * CELL_WIDTH,
-                        y * CELL_HEIGHT
-                    );
+                    Bridge* bridge = new Bridge(x * CELL_WIDTH, y * CELL_HEIGHT);
                     bridge->setWorld(world);
                     addObject(bridge);
                     break;
@@ -191,27 +168,17 @@ void Klad1::prepare(Context* context) {
             }
         }
     }
-
-    player = new Player(
-        sprites[SPRITE_PLAYER],
-        level1.playerSpawn.x * CELL_WIDTH,
-        level1.playerSpawn.y * CELL_HEIGHT
-    );
+    player = new Player(level1.playerSpawn.x * CELL_WIDTH, level1.playerSpawn.y * CELL_HEIGHT);
     player->setWorld(world);
     addObject(player);
     playerSpawnX = player->getX();
     playerSpawnY = player->getY();
 
     for (const Position& tidePosition : tideSpawns) {
-        Tide* tide = new Tide(
-            sprites[SPRITE_TIDE],
-            tidePosition.x * CELL_WIDTH,
-            tidePosition.y * CELL_HEIGHT
-        );
+        Tide* tide = new Tide(tidePosition.x * CELL_WIDTH, tidePosition.y * CELL_HEIGHT);
         addObject(tide);
         this->tides.push_back(tide);
     }
-
     addFps(font);
 
     context->camera->setZoom(1.5f);
@@ -226,12 +193,7 @@ void Klad1::update(Context* context) {
 
     Keyboard* keyboard = context->input->keyboard;
     if (!player->isFalling() && keyboard->space && bulletCooldown.isReady()) {
-        Bullet* bullet = new Bullet(
-            sprites[SPRITE_BULLET],
-            player->getBulletX(),
-            player->getBulletY(),
-            player->isFacingRight()
-        );
+        Bullet* bullet = new Bullet(player->getBulletX(), player->getBulletY(), player->isFacingRight());
         bullet->setWorld(world);
         addObject(bullet);
         bullets.push_back(bullet);
@@ -276,7 +238,7 @@ void Klad1::update(Context* context) {
         goldCollected++;
 
         if (gold->getIndex() == keyGold && key == nullptr) {
-            key = new Key(sprites[SPRITE_KEY], gold->getX(), gold->getY());
+            key = new Key(gold->getX(), gold->getY());
             addObject(key);
             spawnedKeyThisFrame = true;
         }

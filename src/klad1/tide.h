@@ -4,12 +4,11 @@
 #include "game/object.h"
 
 class Animation;
-class Sprite;
 class Context;
 
 class Tide : public Object {
 public:
-    Tide(Sprite* sprite, float x, float y);
+    Tide(float x, float y);
 
     void update(Context* context) override;
     void render(Context* context) override;
@@ -18,6 +17,9 @@ public:
 
 private:
     Animation* body = nullptr;
+
+protected:
+    void prepare() override;
 };
 
 #endif // KLAD1_TIDE_H

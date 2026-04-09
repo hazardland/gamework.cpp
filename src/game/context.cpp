@@ -1,5 +1,6 @@
 #include "game/context.h"
 
+#include "game/audio.h"
 #include "game/camera.h"
 #include "game/clock.h"
 #include "game/input.h"
@@ -10,6 +11,7 @@ Context::Context() {
     input = new Input();
     camera = new Camera();
     screen = new Screen();
+    audio = new Audio();
 }
 
 Context::~Context() {
@@ -17,5 +19,6 @@ Context::~Context() {
     delete input;
     delete camera;
     delete screen;
+    delete audio;
 }
 

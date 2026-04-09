@@ -14,6 +14,7 @@
 
 class Fps;
 class Object;
+class Sound;
 class World;
 class Sprite;
 class Context;
@@ -44,6 +45,7 @@ public:
     // SDL_Window* window;
 
     std::map<int, Sprite*> sprites;
+    std::map<int, Sound*> sounds;
 
     World* world = nullptr;
 
@@ -116,6 +118,8 @@ public:
      * @param obj An Object pointer representing the object to be added to the Scene
      */
     void addObject(Object* obj, uint32_t id);
+    void addSound(int id, Sound* sound);
+    Sound* getSound(int id);
 
     /**
      * @brief Get object by id

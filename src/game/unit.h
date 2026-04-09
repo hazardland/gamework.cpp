@@ -47,7 +47,6 @@ private:
     public:
     bool moved = false;
     World* world = nullptr;
-    Scene* scene = nullptr;
     // Render position is relateive to position but can be different
     // Like can be x:-24, y:-24 which means it will be drown
     // Sligthly up and left from parent position

@@ -4,12 +4,11 @@
 #include "game/unit.h"
 
 class Animation;
-class Sprite;
 class Context;
 
 class Ladder : public Unit {
 public:
-    Ladder(Sprite* sprite, float x, float y);
+    Ladder(float x, float y);
 
     void update(Context* context) override;
     void render(Context* context) override;
@@ -19,6 +18,9 @@ public:
 
 private:
     Animation* body = nullptr;
+
+protected:
+    void prepare() override;
 };
 
 #endif // KLAD1_LADDER_H

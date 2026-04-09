@@ -7,14 +7,18 @@
 #include "game/camera.h"
 #include "game/clock.h"
 #include "game/context.h"
+#include "game/scene.h"
 #include "game/sprite.h"
 
-Gate::Gate(Sprite* sprite, float x, float y) {
+Gate::Gate(float x, float y) {
     setLayer(Klad1::LAYER_WORLD);
     allowTile(TILE_BLANK);
     setSize(32, 22);
     setPosition(x, y);
-    body = new Animation(sprite, 1);
+}
+
+void Gate::prepare() {
+    body = new Animation(scene->sprites[Klad1::SPRITE_DOOR], 1);
 }
 
 void Gate::update(Context* context) {

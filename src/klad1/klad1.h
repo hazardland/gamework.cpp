@@ -54,6 +54,8 @@ public:
     static constexpr int SPRITE_KEY = 8;
     static constexpr int SPRITE_BULLET = 9;
 
+    static constexpr int SOUND_STEP = 1;
+
     static constexpr int LAYER_BACKGROUND = 0;
     static constexpr int LAYER_WORLD = 1;
 
@@ -62,4 +64,3 @@ public:
 };
 
 #endif // KLAD1_SCENE_H
-

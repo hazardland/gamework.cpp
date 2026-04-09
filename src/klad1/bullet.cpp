@@ -9,19 +9,23 @@
 #include "game/cell.h"
 #include "game/clock.h"
 #include "game/context.h"
+#include "game/scene.h"
 #include "game/sprite.h"
 #include "game/debug.h"
 
 #include <algorithm>
 
-Bullet::Bullet(Sprite* sprite, float x, float y, bool facingRight) {
+Bullet::Bullet(float x, float y, bool facingRight) {
     setLayer(Klad1::LAYER_WORLD);
     setSize(8, 4);
     setPosition(x, y);
     direction = facingRight ? 1.0f : -1.0f;
     speed = 18.0f;
-    body = new Animation(sprite, facingRight ? 1 : 2);
     renderPosition = relativePosition(-12, -9, 32, 22);
+}
+
+void Bullet::prepare() {
+    body = new Animation(scene->sprites[Klad1::SPRITE_BULLET], direction > 0 ? 1 : 2);
 }
 
 float Bullet::findWallHitX(float startFront, float endFront) {

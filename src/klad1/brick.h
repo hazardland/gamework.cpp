@@ -6,7 +6,6 @@
 #include "game/unit.h"
 
 class Animation;
-class Sprite;
 class Context;
 
 class Brick : public Unit {
@@ -16,7 +15,7 @@ public:
         Right
     };
 
-    Brick(Sprite* sprite, float x, float y);
+    Brick(float x, float y);
 
     void update(Context* context) override;
     void render(Context* context) override;
@@ -51,6 +50,9 @@ private:
     int getIntactCount() const;
     float getQuarterWidth();
     int getClipId() const;
+
+protected:
+    void prepare() override;
 };
 
 #endif // KLAD1_BRICK_H
