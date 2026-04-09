@@ -10,6 +10,8 @@
 #include "game/scene.h"
 
 class Image;
+class Door;
+class Gate;
 class Gold;
 class Key;
 class Player;
@@ -25,12 +27,15 @@ private:
     TTF_Font* font = nullptr;
     Player* player = nullptr;
     Key* key = nullptr;
+    std::vector<Door*> doors;
+    std::vector<Gate*> gates;
     std::vector<Gold*> golds;
     std::vector<Bullet*> bullets;
     std::vector<Tide*> tides;
     float playerSpawnX = 0;
     float playerSpawnY = 0;
     int lives = 5;
+    bool hasKey = false;
     int keyGold = -1;
     int goldCollected = 0;
     Cooldown bulletCooldown = Cooldown(300);
@@ -57,5 +62,4 @@ public:
 };
 
 #endif // KLAD1_SCENE_H
-
 

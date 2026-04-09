@@ -13,7 +13,6 @@ public:
 
     void update(Context* context) override;
     void render(Context* context) override;
-
     ~Key() override;
 
 private:

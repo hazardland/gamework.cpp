@@ -1,4 +1,5 @@
 #include "klad1/player.h"
+#include "klad1/brick.h"
 #include "klad1/type.h"
 #include "klad1/unit_type.h"
 
@@ -173,6 +174,19 @@ bool Player::canCrossUnit(Unit* target) const {
                 return true;
             break;
 
+        case UNIT_BRICK:
+            if (position != nullptr) {
+                SDL_FRect* self = position->getPosition();
+                SDL_FRect* other = target->getPosition();
+                if (self->x < other->x + other->w &&
+                    self->x + self->w > other->x &&
+                    self->y < other->y + other->h &&
+                    self->y + self->h > other->y) {
+                    return true;
+                }
+            }
+            break;
+
         case UNIT_BULLET:
             return true;
     }
@@ -207,7 +221,7 @@ bool Player::isFacingRight() const {
 
 float Player::getBulletX() const {
     SDL_FRect* render = renderPosition->getPosition();
-    return facingRight ? render->x + render->w - 6.0f : render->x - 2.0f;
+    return facingRight ? render->x + render->w - 10.0f : render->x + 2.0f;
 }
 
 float Player::getBulletY() const {

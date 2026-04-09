@@ -34,18 +34,22 @@ void Object::setSize(float width, float height) {
 
 void Object::setX(float x) {
     position->setX(x);
+    updateChildPositions();
 }
 
 void Object::setY(float y) {
     position->setY(y);
+    updateChildPositions();
 }
 
 void Object::setHeight(float height) {
     position->setHeight(height);
+    updateChildPositions();
 }
 
 void Object::setWidth(float width) {
     position->setWidth(width);
+    updateChildPositions();
 }
 
 float Object::getX() {

@@ -2,6 +2,7 @@
 #include "klad1/bridge.h"
 #include "klad1/brick.h"
 #include "klad1/door.h"
+#include "klad1/gate.h"
 #include "klad1/gold.h"
 #include "klad1/key.h"
 #include "klad1/ladder.h"
@@ -20,17 +21,19 @@
 #include "game/sprite.h"
 #include "game/context.h"
 
-#include <iostream>
 #include <SDL3_ttf/SDL_ttf.h>
 #include <random>
 
 void Klad1::prepare(Context* context) {
     Scene::prepare(context);
+    doors.clear();
+    gates.clear();
     golds.clear();
     bullets.clear();
     tides.clear();
     key = nullptr;
     lives = 5;
+    hasKey = false;
     goldCollected = 0;
     keyGold = -1;
 
@@ -48,11 +51,24 @@ void Klad1::prepare(Context* context) {
         2
     );
 
-    sprites[SPRITE_BRICK] = (new Sprite(image, CELL_WIDTH, CELL_HEIGHT))->addClip(1, 8, 0, 1, false, false);
+    sprites[SPRITE_BRICK] = (new Sprite(image, CELL_WIDTH, CELL_HEIGHT))
+        ->addClip(1, 8, 0, 1, false, false)
+        ->addClip(2, 12, 0, 1, false, false)
+        ->addClip(3, 13, 0, 1, false, false)
+        ->addClip(4, 14, 0, 1, false, false)
+        ->addClip(5, 15, 0, 1, false, false)
+        ->addClip(6, 16, 0, 1, false, false)
+        ->addClip(7, 17, 0, 1, false, false)
+        ->addClip(8, 18, 0, 1, false, false)
+        ->addClip(9, 19, 0, 1, false, false)
+        ->addClip(10, 20, 0, 1, false, false)
+        ->addClip(11, 46, 0, 1, false, false);
     sprites[SPRITE_BRIDGE] = (new Sprite(image, CELL_WIDTH, CELL_HEIGHT))->addClip(1, 7, 0, 1, false, false);
     sprites[SPRITE_LADDER] = (new Sprite(image, CELL_WIDTH, CELL_HEIGHT))->addClip(1, 6, 0, 1, false, false);
     sprites[SPRITE_GOLD] = (new Sprite(image, CELL_WIDTH, CELL_HEIGHT))->addClip(1, 1, 0, 1, false, false);
-    sprites[SPRITE_DOOR] = (new Sprite(image, CELL_WIDTH, CELL_HEIGHT))->addClip(1, 2, 0, 1, false, false);
+    sprites[SPRITE_DOOR] = (new Sprite(image, CELL_WIDTH, CELL_HEIGHT))
+        ->addClip(1, 2, 0, 1, false, false)
+        ->addClip(2, 11, 0, 1, false, false);
     sprites[SPRITE_TIDE] = (new Sprite(image, CELL_WIDTH, CELL_HEIGHT))->addClip(1, 4, 0, 1, false, false);
     sprites[SPRITE_KEY] = (new Sprite(image, CELL_WIDTH, CELL_HEIGHT))->addClip(1, 10, 0, 1, false, false);
     sprites[SPRITE_BULLET] = (new Sprite(image, CELL_WIDTH, CELL_HEIGHT))
@@ -96,14 +112,27 @@ void Klad1::prepare(Context* context) {
                     break;
                 }
 
-                case Level::EXIT:
                 case Level::DOOR: {
                     Door* door = new Door(
                         sprites[SPRITE_DOOR],
                         x * CELL_WIDTH,
                         y * CELL_HEIGHT
                     );
+                    door->setWorld(world);
                     addObject(door);
+                    doors.push_back(door);
+                    break;
+                }
+
+                case Level::EXIT: {
+                    Gate* gate = new Gate(
+                        sprites[SPRITE_DOOR],
+                        x * CELL_WIDTH,
+                        y * CELL_HEIGHT
+                    );
+                    gate->setWorld(world);
+                    addObject(gate);
+                    gates.push_back(gate);
                     break;
                 }
 
@@ -208,7 +237,6 @@ void Klad1::update(Context* context) {
         bullets.push_back(bullet);
         bulletCooldown.reset();
         player->shoot();
-        // std::cout << "Bullet spawned at " << SDL_GetTicks() << " ms\n";
     }
 
     for (Tide* tide : tides) {
@@ -233,6 +261,8 @@ void Klad1::update(Context* context) {
         it = bullets.erase(it);
     }
 
+    bool spawnedKeyThisFrame = false;
+
     for (Gold* gold : golds) {
         if (gold == nullptr || gold->isCollected()) {
             continue;
@@ -248,6 +278,25 @@ void Klad1::update(Context* context) {
         if (gold->getIndex() == keyGold && key == nullptr) {
             key = new Key(sprites[SPRITE_KEY], gold->getX(), gold->getY());
             addObject(key);
+            spawnedKeyThisFrame = true;
+        }
+    }
+
+    if (!spawnedKeyThisFrame && key != nullptr && !hasKey && player->intersects(key)) {
+        hasKey = true;
+    }
+
+    for (Door* door : doors) {
+        if (door != nullptr && !door->isOpen() && player->intersects(door, 1, 1, 1, 1)) {
+            door->open();
+        }
+    }
+
+    if (hasKey) {
+        for (Gate* gate : gates) {
+            if (gate != nullptr && !gate->isOpen() && player->intersects(gate, 1, 1, 1, 1)) {
+                gate->open();
+            }
         }
     }
 }

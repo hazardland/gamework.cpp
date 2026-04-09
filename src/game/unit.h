@@ -88,6 +88,7 @@ private:
     virtual bool canCrossUnit(Unit* target) const;
     virtual bool canCrossTile(int type) const;
     virtual int getType() const;
+    virtual bool isSolid() const;
 
     bool scanUnits(float right, float top, float left, float bottom, const std::function<bool(Unit*)>& fn, int layer = -1) {
         if (world == nullptr || !isReady()) {

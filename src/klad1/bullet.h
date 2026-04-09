@@ -21,7 +21,10 @@ public:
 private:
     Animation* body = nullptr;
     bool dead = false;
+    bool dying = false;
     float direction = 1.0f;
+
+    float findWallHitX(float startFront, float endFront);
 };
 
 #endif // KLAD1_BULLET_H

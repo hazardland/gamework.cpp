@@ -1,5 +1,5 @@
-#ifndef KLAD1_DOOR_H
-#define KLAD1_DOOR_H
+#ifndef KLAD1_GATE_H
+#define KLAD1_GATE_H
 
 #include "game/unit.h"
 
@@ -7,9 +7,9 @@ class Animation;
 class Sprite;
 class Context;
 
-class Door : public Unit {
+class Gate : public Unit {
 public:
-    Door(Sprite* sprite, float x, float y);
+    Gate(Sprite* sprite, float x, float y);
 
     void update(Context* context) override;
     void render(Context* context) override;
@@ -18,11 +18,11 @@ public:
     bool isOpen() const;
     int getType() const override;
 
-    ~Door() override;
+    ~Gate() override;
 
 private:
     Animation* body = nullptr;
     bool opened = false;
 };
 
-#endif // KLAD1_DOOR_H
+#endif // KLAD1_GATE_H

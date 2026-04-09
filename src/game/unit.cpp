@@ -115,6 +115,10 @@ int Unit::getType() const {
     return 0;
 }
 
+bool Unit::isSolid() const {
+    return true;
+}
+
 bool Unit::canMove(float deltaX, float deltaY) {
     if (world==nullptr) {
         return true;
@@ -170,6 +174,7 @@ bool Unit::canPlace(float newX, float newY, float newWidth, float newHeight) {
             auto& objects = cell->units[getLayer()];
             for (const auto& object : objects) {
                 if (object == this) continue;
+                if (!object->isSolid()) continue;
                 if (canCrossUnit(object)) continue;
 
                 // Now do collision check inside cell
@@ -457,5 +462,4 @@ Unit::~Unit() {
         delete job;
     }
 }
-
 
