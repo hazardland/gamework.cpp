@@ -17,7 +17,6 @@
 #include "game/sprite.h"
 #include "game/context.h"
 
-
 Player::Player(float x, float y) {
     setSize(19.8f, 13.84f);
     setLayer(1);
@@ -36,7 +35,6 @@ void Player::scan() {
     inLadder = false;
     aboveLadder = false;
     nearBridge = 0;
-    nearLadder = 0;
     foundBridge = false;
     wrongBridge = false;
 
@@ -44,28 +42,23 @@ void Player::scan() {
         return;
     }
 
-    float feetTop = getY() + getHeight() - 1;
-    float feetBottom = getY() + getHeight();    
+    float feet = getY() + getHeight();    
     
-    scanUnits(1, 1, 1, 1, [&](Unit* unit) {
+    scanUnits(2, 2, 2, 2, [&](Unit* unit) {
         switch (unit->getType()) {
             case UNIT_LADDER:
                 if (intersects(unit)) {
-                    nearLadder = unit->getY() + unit->getHeight() - (getY() + getHeight()*2);
-                    if (getX() < unit->getX() + unit->getWidth() &&
-                        getX() + getWidth() > unit->getX() &&
-                        feetTop < unit->getY() + unit->getHeight() &&
-                        feetBottom > unit->getY()) {
-
+                    if (
+                        feet > unit->getY() && feet<unit->getY()+unit->getHeight()+LADDER_FALL_HOLD) {
                         inLadder = true;
-                    }           
-                } else if (intersects(unit,0,0,0,1)) {
+                    }
+                } else if (intersects(unit,0,0,0,2)) {
                     aboveLadder = true;
                 }
                 break;
 
             case UNIT_BRIDGE:
-                if (!intersects(unit) && (intersects(unit, 1, 0, 0, 0) || intersects(unit, 0, 0, 1, 0))) {
+                if (!intersects(unit) && (intersects(unit, 2, 0, 0, 0) || intersects(unit, 0, 0, 2, 0))) {
                     foundBridge = true;
                     nearBridge =
                         (unit->getY() + unit->getHeight()) -
@@ -195,28 +188,16 @@ void Player::update(Context* context) {
             }
         }
     }
+
 }
 
 void Player::render(Context* context) {
     if (context->camera->isVisible(getRenderPosition())) {
-        print(getPosition(),
-            "foundBridge", foundBridge,
-            "nearBridge", nearBridge,
-            "wrongBridge", wrongBridge,
-            "falling", falling
-        );
-        // print(
-        //     getPosition(),
-        //     "IL", inLadder,
-        //     "AL", aboveLadder,
-        //     "FB", foundBridge,
-        //     "NB", nearBridge,
-        //     "WB", wrongBridge,
-        //     "F", static_cast<int>(falling),
-        //     "MX", debugMoveX,
-        //     "MY", debugMoveY,
-        //     "DX", debugDeltaX,
-        //     "DY", debugDeltaY
+        // print(getPosition(), 
+        //     "inLadder", inLadder,
+        //     "aboveLadder", aboveLadder,
+        //     "x", getX(),
+        //     "y", getY()
         // );
         body->render(context->camera->translate(getRenderPosition()));
     }
@@ -263,7 +244,6 @@ void Player::respawn(float x, float y) {
     inLadder = false;
     aboveLadder = false;
     nearBridge = 0;
-    nearLadder = 0;
     foundBridge = false;
     wrongBridge = false;
     setPosition(x, y);

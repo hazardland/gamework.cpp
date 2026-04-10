@@ -11,6 +11,6 @@ Exit::Exit(float x, float y) {
 
 void Exit::render(Context* context) {
     if (context->camera->isVisible(getPosition())) {
-        draw(getPosition(), {255, 210, 70, 255});
+        // draw(getPosition(), {255, 210, 70, 255});
     }
 }

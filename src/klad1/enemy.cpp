@@ -35,7 +35,6 @@ void Enemy::scan() {
     inLadder = false;
     aboveLadder = false;
     nearBridge = 0;
-    nearLadder = 0;
     foundBridge = false;
     wrongBridge = false;
 
@@ -43,27 +42,23 @@ void Enemy::scan() {
         return;
     }
 
-    float feetTop = getY() + getHeight() - 1;
-    float feetBottom = getY() + getHeight();
+    float feet = getY() + getHeight();
 
-    scanUnits(1, 1, 1, 1, [&](Unit* unit) {
+    scanUnits(2, 2, 2, 2, [&](Unit* unit) {
         switch (unit->getType()) {
             case UNIT_LADDER:
                 if (intersects(unit)) {
-                    nearLadder = unit->getY() + unit->getHeight() - (getY() + getHeight() * 2);
-                    if (getX() < unit->getX() + unit->getWidth() &&
-                        getX() + getWidth() > unit->getX() &&
-                        feetTop < unit->getY() + unit->getHeight() &&
-                        feetBottom > unit->getY()) {
+                    if (
+                        feet > unit->getY() && feet<unit->getY()+unit->getHeight()+LADDER_FALL_HOLD) {
                         inLadder = true;
                     }
-                } else if (intersects(unit, 0, 0, 0, 1)) {
+                } else if (intersects(unit, 0, 0, 0, 2)) {
                     aboveLadder = true;
                 }
                 break;
 
             case UNIT_BRIDGE:
-                if (!intersects(unit) && (intersects(unit, 1, 0, 0, 0) || intersects(unit, 0, 0, 1, 0))) {
+                if (!intersects(unit) && (intersects(unit, 2, 0, 0, 0) || intersects(unit, 0, 0, 2, 0))) {
                     foundBridge = true;
                     nearBridge =
                         (unit->getY() + unit->getHeight()) -
@@ -124,7 +119,7 @@ void Enemy::update(Context* context) {
 
     if (desiredX != 0 && canMove(straightX, 0)) {
         moveX = desiredX;
-        if (foundBridge && nearBridge < 1 && nearBridge > -5) {
+        if (foundBridge && nearBridge <= 1 && nearBridge > BRIDGE_SNAP_UP) {
             moveY = -1.0f;
         }
         facingRight = moveX > 0;
@@ -175,7 +170,7 @@ bool Enemy::canCrossUnit(Unit* target) const {
             return true;
 
         case UNIT_BRIDGE:
-            if (falling > 3 || nearBridge <= -5 || wrongBridge) {
+            if (falling > BRIDGE_FALL_HOLD || nearBridge <= BRIDGE_SNAP_UP || wrongBridge) {
                 return true;
             }
             break;
@@ -211,7 +206,6 @@ void Enemy::respawn() {
     inLadder = false;
     aboveLadder = false;
     nearBridge = 0;
-    nearLadder = 0;
     foundBridge = false;
     wrongBridge = false;
     setPosition(spawnX, spawnY);
