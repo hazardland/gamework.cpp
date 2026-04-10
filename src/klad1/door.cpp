@@ -44,6 +44,10 @@ bool Door::isOpen() const {
     return opened;
 }
 
+void Door::setOpen(bool opened) {
+    this->opened = opened;
+}
+
 int Door::getType() const {
     return UNIT_DOOR;
 }

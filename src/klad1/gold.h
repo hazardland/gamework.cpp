@@ -15,6 +15,7 @@ public:
     int getIndex() const;
     bool isCollected() const;
     void collect();
+    void setCollected(bool collected);
 
     ~Gold() override;
 

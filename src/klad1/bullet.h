@@ -14,6 +14,7 @@ public:
     void update(Context* context) override;
     void render(Context* context) override;
     bool isDead() const;
+    bool isFacingRight() const;
     int getType() const override;
 
     ~Bullet() override;

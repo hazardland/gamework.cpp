@@ -24,6 +24,11 @@ public:
     void hit(HitSide side);
     float getHitX(HitSide side);
     bool isDestroyed() const;
+    int getDamagedLeft() const;
+    int getDamagedRight() const;
+    bool isRegenerating() const;
+    Uint64 getRegenElapsed() const;
+    void setState(int damagedLeft, int damagedRight, bool regenerating, Uint64 regenElapsed);
 
     ~Brick();
 

@@ -40,6 +40,10 @@ void Gold::collect() {
     collected = true;
 }
 
+void Gold::setCollected(bool collected) {
+    this->collected = collected;
+}
+
 Gold::~Gold() {
     delete body;
 }

@@ -200,6 +200,10 @@ bool Bullet::isDead() const {
     return dead;
 }
 
+bool Bullet::isFacingRight() const {
+    return direction > 0;
+}
+
 int Bullet::getType() const {
     return UNIT_BULLET;
 }

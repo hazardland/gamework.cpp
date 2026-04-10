@@ -15,6 +15,7 @@ public:
     bool isSolid() const override;
     void open();
     bool isOpen() const;
+    void setOpen(bool opened);
     int getType() const override;
 
     ~Gate() override;

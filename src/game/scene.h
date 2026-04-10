@@ -141,6 +141,7 @@ public:
      * @param id An Object pointer representing the object to be added to the Scene
      */
     void removeObject(int id);
+    void clearObjects();
         
     
     /**

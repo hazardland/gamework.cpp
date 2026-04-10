@@ -9,6 +9,7 @@
 #include "game/scene.h"
 #include "game/sprite.h"
 #include "game/context.h"
+#include "game/debug.h"
 
 Brick::Brick(float x, float y) {
     setLayer(1);
@@ -35,6 +36,37 @@ float Brick::getQuarterWidth() {
 
 bool Brick::isDestroyed() const {
     return getIntactCount() <= 0;
+}
+
+int Brick::getDamagedLeft() const {
+    return damagedLeft;
+}
+
+int Brick::getDamagedRight() const {
+    return damagedRight;
+}
+
+bool Brick::isRegenerating() const {
+    return regenerating;
+}
+
+Uint64 Brick::getRegenElapsed() const {
+    if (!regenerating) {
+        return 0;
+    }
+
+    return SDL_GetTicks() - destroyedAt;
+}
+
+void Brick::setState(int damagedLeft, int damagedRight, bool regenerating, Uint64 regenElapsed) {
+    this->damagedLeft = damagedLeft;
+    this->damagedRight = damagedRight;
+    this->regenerating = regenerating;
+    if (regenerating) {
+        destroyedAt = SDL_GetTicks() - regenElapsed;
+    } else {
+        destroyedAt = 0;
+    }
 }
 
 bool Brick::isSolid() const {
@@ -152,6 +184,7 @@ void Brick::update(Context* context) {
 void Brick::render(Context* context) {
     if (context->camera->isVisible(getRenderPosition()) && getClipId() > 0) {
         body->render(context->camera->translate(getRenderPosition()));
+        // draw(getPosition());
     }
 }
 
@@ -162,5 +195,4 @@ int Brick::getType() const {
 Brick::~Brick() {
     delete body;
 }
-
 

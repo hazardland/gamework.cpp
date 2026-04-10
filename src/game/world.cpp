@@ -117,7 +117,15 @@ void World::setCell(int x, int y, int type, int tile) {
     setTile(x, y, tile);
 }
 
-bool World::scanUnits(float x, float y, float width, float height, const std::function<bool(Unit*)>& fn, int layer) {
+bool World::scan(
+    float x,
+    float y,
+    float width,
+    float height,
+    const std::function<bool(Cell*, int, int)>& onTile,
+    const std::function<bool(Unit*)>& onUnit,
+    int layer
+) {
     if (width <= 0 || height <= 0) {
         return true;
     }
@@ -139,7 +147,12 @@ bool World::scanUnits(float x, float y, float width, float height, const std::fu
 
     for (int cellX = fromX; cellX <= toX; cellX++) {
         for (int cellY = fromY; cellY <= toY; cellY++) {
-            for (Unit* unit : grid[cellX][cellY]->units[layer]) {
+            Cell* cell = grid[cellX][cellY];
+            if (!onTile(cell, cellX, cellY)) {
+                return false;
+            }
+
+            for (Unit* unit : cell->units[layer]) {
                 if (unit->lastScanId == scanId) {
                     continue;
                 }
@@ -149,7 +162,7 @@ bool World::scanUnits(float x, float y, float width, float height, const std::fu
                     x + width > unit->getX() &&
                     y < unit->getY() + unit->getHeight() &&
                     y + height > unit->getY()) {
-                    if (!fn(unit)) {
+                    if (!onUnit(unit)) {
                         return false;
                     }
                 }
@@ -158,6 +171,18 @@ bool World::scanUnits(float x, float y, float width, float height, const std::fu
     }
 
     return true;
+}
+
+bool World::scanUnits(float x, float y, float width, float height, const std::function<bool(Unit*)>& fn, int layer) {
+    return scan(
+        x,
+        y,
+        width,
+        height,
+        [](Cell*, int, int) { return true; },
+        fn,
+        layer
+    );
 }
 
 void World::removeObject(Unit* unit) {

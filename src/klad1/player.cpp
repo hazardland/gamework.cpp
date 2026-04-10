@@ -85,8 +85,15 @@ void Player::update(Context* context) {
     scan();
 
     Keyboard* key = context->input->keyboard;
-    bool fallingNow = !inLadder && !aboveLadder && canMove(0, 1);
-    bool showShoot = shootCooldown.isActive() || (key->space && !fallingNow);
+    if (key->a || key->left) {
+        facingRight = false;
+    } else if (key->d || key->right) {
+        facingRight = true;
+    }
+
+    float fallStep = (static_cast<float>(context->clock->delta) * speed) / 100.0f;
+    bool fallingNow = !inLadder && !aboveLadder && canMove(0, fallStep);
+    bool showShoot = shootCooldown.isActive() || key->space;
     int previousClip = body->activeClip;
     int previousFrame = body->frame;
     bool playedStep = false;
@@ -94,7 +101,11 @@ void Player::update(Context* context) {
     if (fallingNow) {
         float deltaX = 0;
         float deltaY = 0;
+        debugMoveX = 0;
+        debugMoveY = 1;
         move(context->clock->delta, 0, 1, deltaX, deltaY);
+        debugDeltaX = deltaX;
+        debugDeltaY = deltaY;
         falling += deltaY;
         wasFalling = true;
         if (showShoot) {
@@ -117,6 +128,9 @@ void Player::update(Context* context) {
 
     float moveX = 0;
     float moveY = 0;
+    bool movedNow = false;
+    float deltaX = 0;
+    float deltaY = 0;
 
     if (!showShoot) {
         if (inLadder) { // && !aboveLadder
@@ -132,31 +146,36 @@ void Player::update(Context* context) {
         if (key->a || key->left) {
             moveX = -1;
             facingRight = false;
-            if (nearBridge!=0 && nearBridge<1 && nearBridge>-5){
+            if (foundBridge && nearBridge <= 1 && nearBridge > BRIDGE_SNAP_UP) {
                 moveY = -1;
             }
         } else if (key->d || key->right) {
             moveX = 1;
             facingRight = true;
-            if (nearBridge!=0 && nearBridge<1 && nearBridge>-5){
+            if (foundBridge && nearBridge <= 1 && nearBridge > BRIDGE_SNAP_UP) {
                 moveY = -1;
             }
         }
     }
 
     if (!showShoot && (moveX != 0 || moveY != 0)) {
-        float deltaX = 0;
-        float deltaY = 0;
-        move(context->clock->delta, moveX, moveY, deltaX, deltaY);
+        movedNow = move(context->clock->delta, moveX, moveY, deltaX, deltaY);
     }
+
+    debugMoveX = moveX;
+    debugMoveY = moveY;
+    debugDeltaX = deltaX;
+    debugDeltaY = deltaY;
 
     if (showShoot) {
         body->play(facingRight ? SHOOT_RIGHT : SHOOT_LEFT);
-    } else if (moveY != 0 && inLadder) {
+    } else if (!movedNow) {
+        body->play(IDLE);
+    } else if (deltaX == 0 && deltaY != 0 && inLadder) {
         body->play(CLIMB, 1.15f);
-    } else if (moveX < 0) {
+    } else if (deltaX < 0) {
         body->play(RUN_LEFT, 1.15f);
-    } else if (moveX > 0) {
+    } else if (deltaX > 0) {
         body->play(RUN_RIGHT, 1.15f);
     } else {
         body->play(IDLE);
@@ -180,15 +199,24 @@ void Player::update(Context* context) {
 
 void Player::render(Context* context) {
     if (context->camera->isVisible(getRenderPosition())) {
-        // draw(getPosition());
+        print(getPosition(),
+            "foundBridge", foundBridge,
+            "nearBridge", nearBridge,
+            "wrongBridge", wrongBridge,
+            "falling", falling
+        );
         // print(
-            // getPosition(),
-            // "IL", inLadder,
-            // "AL", aboveLadder,
-            // "FB", foundBridge,
-            // "NB", nearBridge
-            // "NL", nearLadder
-            // "F", static_cast<int>(falling)
+        //     getPosition(),
+        //     "IL", inLadder,
+        //     "AL", aboveLadder,
+        //     "FB", foundBridge,
+        //     "NB", nearBridge,
+        //     "WB", wrongBridge,
+        //     "F", static_cast<int>(falling),
+        //     "MX", debugMoveX,
+        //     "MY", debugMoveY,
+        //     "DX", debugDeltaX,
+        //     "DY", debugDeltaY
         // );
         body->render(context->camera->translate(getRenderPosition()));
     }
@@ -201,7 +229,7 @@ bool Player::canCrossUnit(Unit* target) const {
             return true;
 
         case UNIT_BRIDGE:
-            if (falling>3 || nearBridge<=-5 || wrongBridge)
+            if (falling>BRIDGE_FALL_HOLD || nearBridge<=BRIDGE_SNAP_UP || wrongBridge)
                 return true;
             break;
 
@@ -219,10 +247,15 @@ bool Player::canCrossUnit(Unit* target) const {
             break;
 
         case UNIT_BULLET:
+        case UNIT_ENEMY:
             return true;
     }
 
     return Unit::canCrossUnit(target);
+}
+
+int Player::getType() const {
+    return UNIT_PLAYER;
 }
 
 void Player::respawn(float x, float y) {
@@ -248,6 +281,17 @@ void Player::shoot() {
 
 bool Player::isFacingRight() const {
     return facingRight;
+}
+
+float Player::getFalling() const {
+    return falling;
+}
+
+void Player::restore(float x, float y, bool facingRight, float falling, bool wasFalling) {
+    setPosition(x, y);
+    this->facingRight = facingRight;
+    this->falling = falling;
+    this->wasFalling = wasFalling;
 }
 
 float Player::getBulletX() const {

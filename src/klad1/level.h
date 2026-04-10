@@ -2,6 +2,7 @@
 
 #include <array>
 #include <cstdint>
+#include <vector>
 
 struct Position {
     uint8_t x;
@@ -28,7 +29,7 @@ struct Level {
     Position playerSpawn;
     std::array<Position, 2> enemySpawns;
     bool hasBonusLife;
-    std::array<uint8_t, 6> keyGolds;
+    std::vector<uint8_t> keyGolds;
     uint8_t unknown;
     std::array<std::array<uint8_t, WIDTH>, HEIGHT> grid;
 };

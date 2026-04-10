@@ -35,7 +35,6 @@ Scene::Scene(Window* window, int width, int height) {
     // }
 
     renderer = SDL_CreateRenderer(window->getInstance(), preferedDriverName);
-    // renderer = SDL_CreateRenderer(window, preferedDriverId, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 
     std::cout << "Chosen driver: " << SDL_GetRendererName(renderer) << std::endl;
 
@@ -45,6 +44,7 @@ Scene::Scene(Window* window, int width, int height) {
         SDL_Quit();
     }
 
+    SDL_SetRenderVSync(renderer, 1);
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 }
 
@@ -132,8 +132,6 @@ void Scene::build(Context* context) {
 
 void Scene::present(int delay) {
     SDL_RenderPresent(renderer);
-    // cout << "Presenting new frame\n";
-    SDL_Delay(1);
 }
 
 void Scene::addObject(Object* obj) {
@@ -208,6 +206,15 @@ void Scene::removeObject(int id) {
     }
 }
 
+void Scene::clearObjects() {
+    for (Object* object : objects) {
+        delete object;
+    }
+
+    objects.clear();
+    visibleObjects.clear();
+    objectById.clear();
+}
 
 Scene::~Scene() {
     SDL_DestroyRenderer(renderer);

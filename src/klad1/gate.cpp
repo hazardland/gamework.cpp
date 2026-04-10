@@ -44,6 +44,10 @@ bool Gate::isOpen() const {
     return opened;
 }
 
+void Gate::setOpen(bool opened) {
+    this->opened = opened;
+}
+
 int Gate::getType() const {
     return UNIT_GATE;
 }

@@ -50,6 +50,8 @@ void Unit::select() {
 
 // Input dirX and dirY are directions -1, 0 or 1
 bool Unit::move (Uint64 deltaTime, float dirX, float dirY, float &deltaX, float &deltaY) {
+    deltaX = 0;
+    deltaY = 0;
     float moveX = dirX;
     float moveY = dirY;
 
@@ -61,12 +63,11 @@ bool Unit::move (Uint64 deltaTime, float dirX, float dirY, float &deltaX, float 
     float diagonalX = (moveX * (float)deltaTime) * (speed/100);
     float diagonalY = (moveY * (float)deltaTime) * (speed/100);
 
-    deltaX = diagonalX;
-    deltaY = diagonalY;
-
     if (diagonalX!=0 && diagonalY!=0 && canMove(diagonalX, diagonalY)) {
         rotate(diagonalX, diagonalY);
         addPosition(diagonalX, diagonalY);
+        deltaX = diagonalX;
+        deltaY = diagonalY;
         return true;
     }
 
@@ -462,4 +463,3 @@ Unit::~Unit() {
         delete job;
     }
 }
-

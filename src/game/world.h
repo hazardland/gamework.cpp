@@ -32,6 +32,15 @@ public:
     void setType(int x, int y, int type);
     void setTile(int x, int y, int tile);
     void setCell(int x, int y, int type, int tile);
+    bool scan(
+        float x,
+        float y,
+        float width,
+        float height,
+        const std::function<bool(Cell*, int, int)>& onTile,
+        const std::function<bool(Unit*)>& onUnit,
+        int layer = -1
+    );
     bool scanUnits(float x, float y, float width, float height, const std::function<bool(Unit*)>& fn, int layer = -1);
     void removeObject(Unit* unit);
 
