@@ -115,7 +115,7 @@ void Brick::hit(HitSide side) {
 int Brick::getClipId() const {
     if (regenerating) {
         Uint64 elapsed = SDL_GetTicks() - destroyedAt;
-        int stage = static_cast<int>(elapsed / 6000);
+        int stage = static_cast<int>(elapsed / 7200);
 
         if (stage <= 0) {
             return 0;
@@ -167,7 +167,7 @@ int Brick::getClipId() const {
 void Brick::update(Context* context) {
     if (regenerating) {
         Uint64 elapsed = SDL_GetTicks() - destroyedAt;
-        if (elapsed >= 24000) {
+        if (elapsed >= 28800) {
             damagedLeft = 0;
             damagedRight = 0;
             regenerating = false;

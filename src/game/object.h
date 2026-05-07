@@ -50,6 +50,9 @@ class Object {
         virtual bool intersects(SDL_FRect* target, float right = 0, float top = 0, float left = 0, float bottom = 0);
         virtual bool intersects(Position* target, float right = 0, float top = 0, float left = 0, float bottom = 0);
         virtual bool intersects(Object* target, float right = 0, float top = 0, float left = 0, float bottom = 0);
+        virtual bool inside(SDL_FRect* target, float right = 0, float top = 0, float left = 0, float bottom = 0);
+        virtual bool inside(Position* target, float right = 0, float top = 0, float left = 0, float bottom = 0);
+        virtual bool inside(Object* target, float right = 0, float top = 0, float left = 0, float bottom = 0);
         virtual Position* relativePosition(float x, float y, float width, float height);
         virtual Position* relativePosition(float x, float y);
         void updateChildPositions();

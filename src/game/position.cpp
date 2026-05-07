@@ -116,6 +116,33 @@ bool Position::intersects(Position* target, float right, float top, float left, 
     return intersects(target->getPosition(), right, top, left, bottom);
 }
 
+bool Position::inside(SDL_FRect* target, float right, float top, float left, float bottom) {
+    if (target == nullptr) {
+        return false;
+    }
+
+    SDL_FRect* source = getPosition();
+
+    float probeLeft = source->x - left;
+    float probeTop = source->y - top;
+    float probeRight = source->x + source->w + right;
+    float probeBottom = source->y + source->h + bottom;
+
+    return
+        probeLeft >= target->x &&
+        probeRight <= target->x + target->w &&
+        probeTop >= target->y &&
+        probeBottom <= target->y + target->h;
+}
+
+bool Position::inside(Position* target, float right, float top, float left, float bottom) {
+    if (target == nullptr) {
+        return false;
+    }
+
+    return inside(target->getPosition(), right, top, left, bottom);
+}
+
 float* Position::getXPtr() {
     return &rect.x;
 }

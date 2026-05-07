@@ -35,14 +35,15 @@ private:
     static constexpr int RUN_RIGHT = 4;
     static constexpr int SHOOT_RIGHT = 5;
     static constexpr int SHOOT_LEFT = 6;
-    static constexpr int BRIDGE_SNAP_UP = -6;
-    static constexpr int BRIDGE_FALL_HOLD = 6;
-    static constexpr int LADDER_FALL_HOLD = 7;
+    static constexpr int BRIDGE_SNAP_UP = -8;
+    static constexpr int BRIDGE_FALL_HOLD = 8;
+    static constexpr int LADDER_FALL_HOLD = 8;
     
     Animation* body = nullptr;
     float falling = 0;
     bool inLadder = false;
     bool aboveLadder = false;
+    int ladderCount = 0;
     float nearBridge = 0;
     bool foundBridge = false;
     bool wrongBridge = false;

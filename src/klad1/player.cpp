@@ -42,14 +42,31 @@ void Player::scan() {
         return;
     }
 
+    float top = getY();
     float feet = getY() + getHeight();    
+    float left = getX();
+    float right = getX()+getWidth();
+    ladderCount = 0;
     
     scanUnits(2, 2, 2, 2, [&](Unit* unit) {
         switch (unit->getType()) {
             case UNIT_LADDER:
                 if (intersects(unit)) {
+                    bool sameLadderRow =
+                        feet > unit->getY() &&
+                        feet < unit->getY() + unit->getHeight();
+
+                    // Horizontal ladder intersection count
+                    if (sameLadderRow
+                    ) {
+                        ladderCount++;
+                    }
                     if (
-                        feet > unit->getY() && feet<unit->getY()+unit->getHeight()+LADDER_FALL_HOLD) {
+                        (feet > unit->getY() && feet<unit->getY()+unit->getHeight()+LADDER_FALL_HOLD
+                        && left>=unit->getX()-LADDER_FALL_HOLD && right<=unit->getX()+unit->getWidth()+LADDER_FALL_HOLD)
+                        || ladderCount==2
+                        // || (ladderCount==1 && feet>=unit->getY()+unit->getHeight())
+                    ) {
                         inLadder = true;
                     }
                 } else if (intersects(unit,0,0,0,2)) {
@@ -126,7 +143,7 @@ void Player::update(Context* context) {
     float deltaY = 0;
 
     if (!showShoot) {
-        if (inLadder) { // && !aboveLadder
+        if (inLadder) {
             if (key->w || key->up) {
                 moveY = -1;
             } 
@@ -196,6 +213,7 @@ void Player::render(Context* context) {
         // print(getPosition(), 
         //     "inLadder", inLadder,
         //     "aboveLadder", aboveLadder,
+        //     "ladderCount", ladderCount,
         //     "x", getX(),
         //     "y", getY()
         // );

@@ -39,6 +39,8 @@ public:
     SDL_FRect* getPosition();
     bool intersects(SDL_FRect* target, float right = 0, float top = 0, float left = 0, float bottom = 0);
     bool intersects(Position* target, float right = 0, float top = 0, float left = 0, float bottom = 0);
+    bool inside(SDL_FRect* target, float right = 0, float top = 0, float left = 0, float bottom = 0);
+    bool inside(Position* target, float right = 0, float top = 0, float left = 0, float bottom = 0);
     float* getXPtr();
     float* getYPtr();
     float* getWidthPtr();

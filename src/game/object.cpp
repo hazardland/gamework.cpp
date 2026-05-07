@@ -101,6 +101,22 @@ bool Object::intersects(Object* target, float right, float top, float left, floa
     return position->intersects(target->getPosition(), right, top, left, bottom);
 }
 
+bool Object::inside(SDL_FRect* target, float right, float top, float left, float bottom) {
+    return position->inside(target, right, top, left, bottom);
+}
+
+bool Object::inside(Position* target, float right, float top, float left, float bottom) {
+    return position->inside(target, right, top, left, bottom);
+}
+
+bool Object::inside(Object* target, float right, float top, float left, float bottom) {
+    if (target == nullptr) {
+        return false;
+    }
+
+    return position->inside(target->getPosition(), right, top, left, bottom);
+}
+
 Position* Object::relativePosition(float x, float y, float width, float height) {
     Position* pos =  new Position(
                         x, y,
