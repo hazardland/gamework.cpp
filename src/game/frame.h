@@ -1,7 +1,7 @@
 #ifndef GAME_FRAME_H
 #define GAME_FRAME_H
 
-#include <SDL2/SDL_image.h>
+#include <SDL3_image/SDL_image.h>
 
 /**
  * @class Frame
@@ -19,13 +19,13 @@ public:
     ~Frame() = default;
 
     /**
-     * @brief Retrieve the current SDL_RendererFlip value.
-     * @return The current SDL_RendererFlip value.
+     * @brief Retrieve the current SDL_FlipMode value.
+     * @return The current SDL_FlipMode value.
      */
-    SDL_RendererFlip getFlip();
+    SDL_FlipMode getFlip();
 
     /**
-     * @brief Cache the SDL_RendererFlip value based on the flipX and flipY boolean values.
+     * @brief Cache the SDL_FlipMode value based on the flipX and flipY boolean values.
      */
     void cacheFlip();
 
@@ -33,16 +33,18 @@ public:
      * @brief Retrieve the SDL_Rect of the frame.
      * @return Pointer to the SDL_Rect of the frame.
      */
-    SDL_Rect* getRect();
+    SDL_FRect* getRect();
 
-    SDL_Rect rect;   ///< Defines the x, y, width, and height of the rectangle.
+    SDL_FRect rect;   ///< Defines the x, y, width, and height of the rectangle.
 
     bool flipX = false;  ///< Boolean flag indicating if the frame should be flipped horizontally.
 
     bool flipY = false;  ///< Boolean flag indicating if the frame should be flipped vertically.
 
 private:
-    SDL_RendererFlip flip;  ///< SDL_RendererFlip value for flipping the texture.
+    SDL_FlipMode flip;  ///< SDL_FlipMode value for flipping the texture.
 };
 
 #endif // GAME_FRAME_H
+
+

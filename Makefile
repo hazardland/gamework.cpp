@@ -5,31 +5,50 @@ else
     WINDOWS := 0
 endif
 
+PKGS := sdl3 sdl3-image sdl3-ttf
+
 # Compiler and flags
 CXX := g++
-CXXFLAGS := -std=c++20 -O3 -m64 -Isrc -s
-LDFLAGS := -lSDL2main -lSDL2 -lSDL2_image -lSDL2_ttf -lwebsockets -lssl -lcrypto -lz -lpthread
+CXXFLAGS := -std=c++20 -O3 -m64 -Isrc -s `pkg-config --cflags $(PKGS)`
+LDFLAGS := -Wl,--subsystem,console `pkg-config --libs $(PKGS)` -lwebsockets
+# -lssl -lcrypto -lz -lpthread
 
 # Add -lmingw32 first for Windows
 ifeq ($(WINDOWS), 1)
-	CXXFLAGS += -Id:/src/cpp/include -Ld:/src/cpp/lib -s
+# CXXFLAGS += -Id:/src/cpp/include -Ld:/src/cpp/lib -s
     LDFLAGS := -lmingw32 -lws2_32 $(LDFLAGS)
 endif
 
 # Build directories
 BUILD_DIR := build
-SRC := main.cpp $(wildcard src/game/*.cpp) $(wildcard src/examples/*.cpp)
-OBJ := $(patsubst %.cpp,$(BUILD_DIR)/%.o,$(SRC))
+
+GAME_SRC := $(filter-out src/game/minimap.cpp src/game/terrain.cpp,$(wildcard src/game/*.cpp))
+WAR2_SRC := war2_main.cpp $(GAME_SRC) $(wildcard src/war2/*.cpp)
+KLAD1_GAME_SRC := $(filter-out src/klad1/tilemap.cpp,$(wildcard src/klad1/*.cpp))
+KLAD1_LEVEL_SRC := $(wildcard src/klad1/levels/*.cpp)
+KLAD1_SRC := klad1_main.cpp $(GAME_SRC) $(KLAD1_GAME_SRC) $(KLAD1_LEVEL_SRC)
+
+WAR2_OBJ := $(patsubst %.cpp,$(BUILD_DIR)/%.o,$(WAR2_SRC))
+KLAD1_OBJ := $(patsubst %.cpp,$(BUILD_DIR)/%.o,$(KLAD1_SRC))
 
 # Create directories for object files
-OBJ_DIRS := $(sort $(dir $(OBJ)))
+OBJ_DIRS := $(sort $(dir $(WAR2_OBJ) $(KLAD1_OBJ)))
 
 # Default target
-all: $(BUILD_DIR) $(OBJ_DIRS) main
+all: $(BUILD_DIR) $(OBJ_DIRS) war2 klad1
 
 # Linking step
-main: $(OBJ)
-	$(CXX) $(CXXFLAGS) -o $@ $(OBJ) $(LDFLAGS)
+war2: $(WAR2_OBJ)
+	$(CXX) $(CXXFLAGS) -o $@ $(WAR2_OBJ) $(LDFLAGS)
+
+klad1: $(KLAD1_OBJ)
+	$(CXX) $(CXXFLAGS) -o $@ $(KLAD1_OBJ) $(LDFLAGS)
+
+run-war2: war2
+	./war2
+
+run-klad1: klad1
+	./klad1
 
 # Compilation step (separate object files in build/)
 $(BUILD_DIR)/%.o: %.cpp | $(BUILD_DIR) $(OBJ_DIRS)
@@ -45,4 +64,4 @@ $(OBJ_DIRS):
 
 # Clean command
 clean:
-	rm -rf main $(BUILD_DIR)
+	rm -rf war2 klad1 $(BUILD_DIR)

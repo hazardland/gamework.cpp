@@ -2,9 +2,9 @@
 #define GAME_OBJECT_H
 
 #include <vector>
-#include <SDL2/SDL_image.h>
+#include <SDL3_image/SDL_image.h>
 
-class State;
+class Context;
 class Position;
 class Scene;
 
@@ -26,15 +26,14 @@ class Object {
 
     protected:
         Position* position;   // Object's position and size
+        Scene* scene = nullptr;
 
     public:
         static uint32_t count;    // Keep count of total objects
         Object();  // Declare constructor
-        // Object(Position* position);  // Declare constructor
-        // Setter and getter methods
-        void setId();
         uint32_t getId();
-        bool hasId();
+        void setScene(Scene* scene);
+        Scene* getScene();
         virtual void addPosition(float x, float y);
         virtual void setPosition(float x, float y);
         virtual void setSize(float width, float height);
@@ -46,14 +45,26 @@ class Object {
         virtual float getY();
         virtual float getHeight();
         virtual float getWidth();
+        virtual bool isReady();
         virtual SDL_FRect* getPosition();
-        virtual Position* createChildPosition(float x, float y, float width, float height);
-        virtual Position* createChildPosition(float x, float y);
+        virtual bool intersects(SDL_FRect* target, float right = 0, float top = 0, float left = 0, float bottom = 0);
+        virtual bool intersects(Position* target, float right = 0, float top = 0, float left = 0, float bottom = 0);
+        virtual bool intersects(Object* target, float right = 0, float top = 0, float left = 0, float bottom = 0);
+        virtual bool inside(SDL_FRect* target, float right = 0, float top = 0, float left = 0, float bottom = 0);
+        virtual bool inside(Position* target, float right = 0, float top = 0, float left = 0, float bottom = 0);
+        virtual bool inside(Object* target, float right = 0, float top = 0, float left = 0, float bottom = 0);
+        virtual Position* relativePosition(float x, float y, float width, float height);
+        virtual Position* relativePosition(float x, float y);
         void updateChildPositions();
-        virtual bool isVisible(State* state);
-        virtual void update(State* state);
-        virtual void render(State* state);
-        ~Object();
+        virtual bool isVisible(Context* context);
+        virtual void update(Context* context);
+        virtual void render(Context* context);
+        virtual ~Object();
+
+    protected:
+        virtual void prepare();
 };
 
 #endif // GAME_OBJECT
+
+

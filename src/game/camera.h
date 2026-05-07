@@ -6,7 +6,7 @@
 #ifndef GAME_CAMERA_H
 #define GAME_CAMERA_H
 
-#include <SDL2/SDL.h>
+#include <SDL3/SDL.h>
 #include "game/cooldown.h"
 
 /**
@@ -75,3 +75,5 @@ class Camera {
 };
 
 #endif
+
+

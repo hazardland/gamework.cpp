@@ -8,6 +8,7 @@ public:
     Cooldown(int cooldownMs);  // Regular constructor
 
     bool isReady();
+    bool isActive();
     void reset();
 
 private:
@@ -16,3 +17,5 @@ private:
 };
 
 #endif
+
+

@@ -1,7 +1,7 @@
 #include "game/sprite.h"
 
 #include <map>
-#include <SDL2/SDL_image.h>
+#include <SDL3_image/SDL_image.h>
 
 #include "game/clip.h"
 #include "game/image.h"
@@ -32,15 +32,15 @@ Sprite::Sprite (Image* image,
 
 // addClip method
 Sprite* Sprite::addClip(int clipId,
-                        int startRow,
                         int startCell,
+                        int startRow, 
                         int frameCount,
                         bool flipX,
                         bool flipY) {
     clips[clipId] = new Clip(image,
                              frameWidth,
                              frameHeight,
-                             startRow, startCell,
+                             startCell, startRow,
                              frameCount,
                              framePause,
                              flipX, flipY, readVertically);
@@ -48,15 +48,28 @@ Sprite* Sprite::addClip(int clipId,
 }
 
 Clip* Sprite::getClip(int clipId) {
-    return clips[clipId];
+    auto clip = clips.find(clipId);
+    if (clip == clips.end()) {
+        return nullptr;
+    }
+    return clip->second;
 }
 
 // getRect method
-SDL_Rect* Sprite::getRect(int clipId, int frameIndex) {
-    return getClip(clipId)->getFrame(frameIndex)->getRect();
+SDL_FRect* Sprite::getRect(int clipId, int frameIndex) {
+    Clip* clip = getClip(clipId);
+    if (clip == nullptr) {
+        return nullptr;
+    }
+    return clip->getFrame(frameIndex)->getRect();
 }
 
 // Destructor
 Sprite::~Sprite() {
+    for (auto& [clipId, clip] : clips) {
+        delete clip;
+    }
     delete image;
 }
+
+

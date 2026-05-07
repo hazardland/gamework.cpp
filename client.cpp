@@ -55,14 +55,14 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    const uint32_t totalProtocols = 10000000;
+    const uint32_t messageCount = 10000000;
     const uint32_t batchSize = 100;
     uint32_t sent = 0;
 
     client.wait();
     auto start = std::chrono::steady_clock::now();
 
-    while (sent < totalProtocols) {
+    while (sent < messageCount) {
 
         for (int i = 0; i < 10; ++i) {
             client.poll();
@@ -82,7 +82,7 @@ int main(int argc, char* argv[]) {
     auto elapsedMs = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 
     std::cout << "Sent " << sent << " messages in " << elapsedMs << " ms\n";
-    std::cout << "Average: " << (elapsedMs / static_cast<float>(totalProtocols)) << " ms/message\n";
+    std::cout << "Average: " << (elapsedMs / static_cast<float>(messageCount)) << " ms/message\n";
 
     return 0;
 }

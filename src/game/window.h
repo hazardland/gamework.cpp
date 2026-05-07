@@ -1,45 +1,39 @@
-// File: window.h
-
 #ifndef GAME_WINDOW_H
 #define GAME_WINDOW_H
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-#include <SDL2/SDL_ttf.h>
+#include <SDL3/SDL.h>
+#include <SDL3_image/SDL_image.h>
+#include <SDL3_ttf/SDL_ttf.h>
 
 #include "game/cooldown.h"
 
-class State;
+class Context;
 class Scene;
 
-extern bool SDL_STARTED;  // Declare the global variable; it will be defined in the .cpp file.
+extern bool SDL_STARTED;
 
-/**
- * @brief The Window class extends from the Screen class and represents a window in the game.
- *
- * This class manages an SDL_Window object, and provides methods for rendering and updating scenes, resizing the window, and running the game loop.
- */
 class Window {
 
 private:
-
-    SDL_Window* window;
-    Scene* scene;
-    State* state;
-    bool fullscreen = false;  // Track fullscreen state
-    Cooldown* fullscreenCooldown;
-    int originalWidth;
-    int originalHeight;
+    SDL_Window* window = nullptr;
+    Scene* scene = nullptr;
+    Context* context = nullptr;
+    bool fullscreen = false;
+    Cooldown* fullscreenCooldown = nullptr;
+    int originalWidth = 0;
+    int originalHeight = 0;
 
 public:
-
-    Window(const char* title, const int width, const int height, State* state = NULL);
+    Window(const char* title, int width, int height, Context* context = nullptr);
     void setScene(Scene* scene);
-    void onResize(int width, int height); //override;
+    void onResize(int width, int height);
     SDL_Window* getInstance();
-    void toggleFullscreen();  // New method
+    void toggleFullscreen();
     bool isFullscreen();
     int run();
+    ~Window();
 };
 
 #endif // GAME_WINDOW_H
+
+

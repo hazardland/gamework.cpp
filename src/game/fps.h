@@ -1,12 +1,12 @@
 #ifndef GAME_FPS_H
 #define GAME_FPS_H
 
-#include <SDL2/SDL_timer.h>
+#include <SDL3/SDL_timer.h>
 
 #include "game/text.h"
 #include <game/cooldown.h>
 
-class State;
+class Context;
 
 /**
  * @class Fps
@@ -30,7 +30,7 @@ public:
      *
      * @param state The current game state.
      */
-    void update(State* state) override;
+    void update(Context* context) override;
 
     /**
      * @brief Returns whether the FPS counter is visible.
@@ -40,10 +40,12 @@ public:
      * @param state The current game state.
      * @return True because FPS counter is always visible.
      */
-    bool isVisible(State* state) override;
+    bool isVisible(Context* context) override;
 
 private:
     int ticks = 0;  ///< Time in milliseconds when the FPS and Delta time were last updated.
 };
 
 #endif // GAME_FPS_H
+
+

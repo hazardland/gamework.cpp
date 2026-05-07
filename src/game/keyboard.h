@@ -1,7 +1,7 @@
 #ifndef GAME_KEYBOARD_H
 #define GAME_KEYBOARD_H
 
-#include <SDL2/SDL.h>
+#include <SDL3/SDL.h>
 
 /**
  * @class Keyboard
@@ -26,8 +26,10 @@ class Keyboard {
         bool f11  = false;
         bool f12  = false;
         bool tab  = false;
-        const Uint8* keys;  ///< SDL key state array for checking specific keys.
-        void reset();  ///< Resets the state of the keys.
+        const bool* keys = nullptr;
+        void read(const bool* keys);
     };
 
 #endif
+
+

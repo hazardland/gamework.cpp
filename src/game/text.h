@@ -5,14 +5,14 @@
 
 #include <string>
 #include <map>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_ttf.h>
+#include <SDL3/SDL.h>
+#include <SDL3_ttf/SDL_ttf.h>
 
-// #include "game/state.h"
+// #include "game/context.h"
 #include "game/object.h"
 
 // class Object;
-class State;
+class Context;
 
 /**
  * @brief The Text class extends from the Object class and represents a text object in the game.
@@ -39,10 +39,12 @@ public:
     Text* appendText(std::string text);
     Text* setColor(SDL_Color color);
     Text* setPositionFixed(bool value);
-    virtual void render(State* state) override;
-    void render(State* state, Position* position);
+    virtual void render(Context* context) override;
+    void render(Context* context, Position* position);
     void toggleVisible();
     ~Text();
 };
 
 #endif // GAME_TEXT_H
+
+

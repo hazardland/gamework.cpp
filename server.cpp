@@ -1,131 +1,86 @@
-#include <libwebsockets.h>
+// File: beast_server.cpp
+#include <boost/beast/core.hpp>
+#include <boost/beast/websocket.hpp>
+#include <boost/asio.hpp>
 #include <iostream>
-#include <deque>
-#include <unordered_map>
-#include <algorithm>
-#include <cstring>
-#include <vector>
+#include <memory>
+#include <set>
+#include <thread>
 
-static constexpr int MAX_PAYLOAD = 4096;
-static constexpr size_t MAX_QUEUE_SIZE = 10000;
+using tcp = boost::asio::ip::tcp;
+namespace websocket = boost::beast::websocket;
 
-struct ClientData {
-    std::deque<std::vector<uint8_t>> outgoing;
-};
+std::set<std::shared_ptr<websocket::stream<tcp::socket>>> clients;
+std::mutex clients_mutex;
 
-static std::vector<lws*> clients;
-static std::unordered_map<lws*, ClientData> clientDataMap;
+class session : public std::enable_shared_from_this<session> {
+public:
+    explicit session(tcp::socket socket)
+        : ws_(std::move(socket)) {}
 
-static int callback_broadcast(struct lws* wsi, enum lws_callback_reasons reason,
-                              void* user, void* in, size_t len) {
-    switch (reason) {
-        case LWS_CALLBACK_ESTABLISHED:
-            std::cout << "[Server] Client connected.\n";
-            clients.push_back(wsi);
-            clientDataMap[wsi] = ClientData{};
-            break;
-
-        case LWS_CALLBACK_RECEIVE: {
-            // Validate message size
-            if (len > MAX_PAYLOAD) {
-                std::cerr << "[Server] Dropping oversized message: " << len << " bytes\n";
-                break;
-            }
-
-            std::vector<uint8_t> msg(reinterpret_cast<uint8_t*>(in),
-                                     reinterpret_cast<uint8_t*>(in) + len);
-
-            // Queue message for all clients except sender
-            for (auto* client : clients) {
-                if (client == wsi)
-                    continue;
-
-                auto& queue = clientDataMap[client].outgoing;
-
-                // if (queue.size() > MAX_QUEUE_SIZE) {
-                //     std::cerr << "[Server] Disconnecting client due to queue overflow\n";
-                //     lws_set_timeout(client, PENDING_TIMEOUT_KILLED_BY_SERVER, LWS_TO_KILL_ASYNC);
-                //     continue;
-                // }
-                // printf("Sending");
-                queue.push_back(msg);  // message is small, so copy is okay
-                lws_callback_on_writable(client);  // Mark for writing
-            }
-            break;
-        }
-
-        case LWS_CALLBACK_SERVER_WRITEABLE: {
-            auto& queue = clientDataMap[wsi].outgoing;
-            if (!queue.empty()) {
-                const auto& msg = queue.front();
-
-                if (msg.size() > MAX_PAYLOAD) {
-                    std::cerr << "[Server] Skipping oversized queued message\n";
-                    queue.pop_front();
-                    break;
-                }
-
-                unsigned char buf[LWS_PRE + MAX_PAYLOAD];
-                std::memcpy(&buf[LWS_PRE], msg.data(), msg.size());
-
-                int bytes_written = lws_write(wsi, &buf[LWS_PRE], msg.size(), LWS_WRITE_BINARY);
-                if (bytes_written < 0) {
-                    std::cerr << "[Server] lws_write failed\n";
-                    return -1;
-                }
-
-                queue.pop_front();
-
-                if (!queue.empty()) {
-                    lws_callback_on_writable(wsi);  // More messages to send
-                }
-            }
-            break;
-        }
-
-        case LWS_CALLBACK_CLOSED:
-        case LWS_CALLBACK_CLIENT_CONNECTION_ERROR:
-            std::cout << "[Server] Client disconnected.\n";
-            clients.erase(std::remove(clients.begin(), clients.end(), wsi), clients.end());
-            clientDataMap.erase(wsi);
-            break;
-
-        default:
-            break;
+    void start() {
+        ws_.set_option(websocket::stream_base::timeout::suggested(boost::beast::role_type::server));
+        ws_.accept([self = shared_from_this()](boost::beast::error_code ec) {
+            if (!ec) self->on_accept();
+        });
     }
 
-    return 0;
+private:
+    websocket::stream<tcp::socket> ws_;
+    boost::beast::flat_buffer buffer_;
+
+    void on_accept() {
+        {
+            std::lock_guard<std::mutex> lock(clients_mutex);
+            clients.insert(ws_.shared_from_this());
+        }
+        do_read();
+    }
+
+    void do_read() {
+        ws_.async_read(buffer_, [self = shared_from_this()](boost::beast::error_code ec, std::size_t bytes_transferred) {
+            boost::ignore_unused(bytes_transferred);
+
+            if (ec == websocket::error::closed) {
+                std::lock_guard<std::mutex> lock(clients_mutex);
+                clients.erase(self->ws_.shared_from_this());
+                return;
+            }
+
+            if (!ec && self->ws_.got_binary()) {
+                std::lock_guard<std::mutex> lock(clients_mutex);
+                for (const auto& client : clients) {
+                    if (client != self->ws_.shared_from_this()) {
+                        boost::beast::error_code ignored;
+                        client->write(boost::asio::buffer(self->buffer_.data()), ignored);
+                    }
+                }
+            }
+
+            self->buffer_.consume(self->buffer_.size());
+            self->do_read();
+        });
+    }
+};
+
+void do_accept(tcp::acceptor& acceptor, boost::asio::io_context& ioc) {
+    acceptor.async_accept([&acceptor, &ioc](boost::beast::error_code ec, tcp::socket socket) {
+        if (!ec) std::make_shared<session>(std::move(socket))->start();
+        do_accept(acceptor, ioc);
+    });
 }
 
 int main() {
-    lws_set_log_level(LLL_ERR, nullptr);  // Only show errors
-    // lws_set_log_level(LLL_ERR | LLL_WARN | LLL_NOTICE | LLL_INFO, nullptr);
+    try {
+        boost::asio::io_context ioc{1};
+        tcp::acceptor acceptor{ioc, tcp::endpoint(tcp::v4(), 9000)};
 
-    lws_protocols protocols[] = {
-        { "ws", callback_broadcast, 0, MAX_PAYLOAD },
-        { nullptr, nullptr, 0, 0 }
-    };
-
-    lws_context_creation_info info = {};
-    info.port = 9000;
-    info.protocols = protocols;
-    info.gid = -1;
-    info.uid = -1;
-
-    lws_context* context = lws_create_context(&info);
-    if (!context) {
-        std::cerr << "Failed to create server context\n";
-        return 1;
+        std::cout << "✅ Boost.Beast WebSocket server running on ws://localhost:9000\n";
+        do_accept(acceptor, ioc);
+        ioc.run();
+    } catch (std::exception& e) {
+        std::cerr << "[!] Error: " << e.what() << "\n";
     }
 
-    std::cout << "[Server] Listening on ws://localhost:9000\n";
-
-    while (true) {
-        lws_service(context, 0); // non-blocking
-    }
-
-    lws_context_destroy(context);
     return 0;
 }
-
-// g++ server.cpp -o server -lwebsockets

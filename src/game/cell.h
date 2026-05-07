@@ -4,16 +4,15 @@
 #include <list>
 #include <vector>
 
-#include <SDL2/SDL_image.h>
+#include <SDL3_image/SDL_image.h>
 
 class Unit;
-class Terrain;
 
 class Cell {
     public:
         int tile;
-        Terrain* terrain;
-        SDL_Rect* rect;
+        int type;
+        SDL_FRect* rect;
 
         std::vector<std::list<Unit*>> units;
 
@@ -21,3 +20,5 @@ class Cell {
 };
 
 #endif
+
+

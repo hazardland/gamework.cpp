@@ -5,7 +5,7 @@
 
 
 #include "game/object.h"
-#include "game/state.h"
+#include "game/context.h"
 #include "game/camera.h"
 #include "game/position.h"
 
@@ -52,7 +52,7 @@ Text* Text::enableCache() {
     return this;
 }
 
-void Text::render(State* state, Position* position) {
+void Text::render(Context* context, Position* position) {
     if (!visible || text.empty()) {
         return;
     }
@@ -60,12 +60,21 @@ void Text::render(State* state, Position* position) {
         if (cacheEnabled && cache.contains(text)) {
             //printf("Cache hit %s\n", text);
             texture = cache[text];
-            int width;
-            int height;
-            SDL_QueryTexture(texture, NULL, NULL, &width, &height);
+            float width;
+            float height;
+            SDL_GetTextureSize(texture, &width, &height);
             position->setSize(width, height);
         } else {
-            SDL_Surface* surface = TTF_RenderText_Blended(font, text.c_str(), color);
+            SDL_Surface* surface = TTF_RenderText_Blended(font, text.c_str(), 0, {0,0,0,255});
+            SDL_Surface* surfaceFg = TTF_RenderText_Blended(font, text.c_str(), 0, color);
+            // Make sure both surfaces were created successfully
+            if (surface && surfaceFg) {
+                SDL_Rect srcRect = {0, 0, surfaceFg->w, surfaceFg->h};
+                SDL_Rect destRect = {-1, -1, 0, 0}; // 1px offset for shadow
+                SDL_BlitSurface(surfaceFg, &srcRect, surface, &destRect);
+            }
+            
+            SDL_DestroySurface(surfaceFg); // correct way to free a surface
             if (surface==NULL) {
                 printf("Failed to render text: %s", SDL_GetError());
             }
@@ -75,24 +84,24 @@ void Text::render(State* state, Position* position) {
                     SDL_DestroyTexture(texture);
                 }
             }
-            texture = SDL_CreateTextureFromSurface(state->renderer, surface);
+            texture = SDL_CreateTextureFromSurface(context->renderer, surface);
             if (cacheEnabled) {
                 cache[text] = texture;
             }
-            SDL_FreeSurface(surface);
+            SDL_DestroySurface(surface);
         }
         prepared = true;
     }
     // printf("rendering tex");
     if (positionFixed) {
-        SDL_RenderCopyF(state->renderer, texture, NULL, position->getPosition());
+        SDL_RenderTexture(context->renderer, texture, NULL, position->getPosition());
     } else {
-        SDL_RenderCopyF(state->renderer, texture, NULL, state->camera->translate(position->getPosition()));
+        SDL_RenderTexture(context->renderer, texture, NULL, context->camera->translate(position->getPosition()));
     }
 }
 
-void Text::render(State* state) {
-    render(state, position);
+void Text::render(Context* context) {
+    render(context, position);
 }
 
 Text* Text::setPositionFixed(bool value) {
@@ -113,3 +122,6 @@ Text::~Text() {
     //     SDL_DestroyTexture(item.second);
     // }
 }
+
+
+
